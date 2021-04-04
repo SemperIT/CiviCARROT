@@ -1,0 +1,105 @@
+name: Integration Tests
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    branches:
+      - main
+    inputs:
+      prurl:
+        description: PR Url
+        required: false
+      repourl:
+        description: Repo Url
+        required: false      
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - drupal: '^9.1'
+            civicrm: 'dev-master'
+    name: Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: db
+        ports:
+          - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    steps:
+      - uses: actions/checkout@v2
+      - uses: shivammathur/setup-php@v2
+        with:
+            php-version: 7.3
+            extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, soap, intl, gd, exif, iconv
+            coverage: none
+            tools: composer:v1
+      - name: Get composer cache directory
+        id: composercache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+      - uses: actions/cache@v2
+        with:
+            path: ${{ steps.composercache.outputs.dir }}
+            key: ${{ runner.os }}-${{ matrix.drupal }}-composer-${{ hashFiles('**/composer.json') }}
+            restore-keys: ${{ runner.os }}-composer-
+      - name: Setup problem matchers for PHPUnit
+        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+      - name: Download Drupal
+        run: |
+          COMPOSER_MEMORY_LIMIT=-1 composer create-project drupal/recommended-project:${{ matrix.drupal }} ~/drupal --no-interaction
+          cd ~/drupal
+          composer config extra.enable-patching true
+          composer config extra.compile-mode all
+          composer config minimum-stability dev
+          composer config prefer-stable true
+          composer config preferred-install dist
+          # composer config repositories.0 composer https://packages.drupal.org/8
+          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/core-dev-pinned:${{ matrix.drupal }} --no-suggest
+      - name: Download CiviCRM ${{ matrix.civicrm }}
+        run: |
+          cd ~/drupal
+          COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }} --no-suggest --prefer-dist
+      - name: Download mink-civicrm-helpers
+        run: |
+          cd ~/drupal
+          COMPOSER_MEMORY_LIMIT=-1 composer require semperit/minkcivicrmhelpers
+      - uses: nanasess/setup-chromedriver@master
+      - name: Run chromedriver
+        run: chromedriver &
+      - name: Run php built-in server
+        run: php -S 127.0.0.1:8080 -t ~/drupal/web &
+      - name: Get some code to test
+        if: ${{ github.event.inputs.prurl != 0 }}
+        run: |
+          mkdir -p ~/drupal/web/sites/default/files/civicrm/ext
+          cd ~/drupal/web/sites/default/files/civicrm/ext
+          git clone ${{ github.event.inputs.repourl }} thingtotest
+      - name: Apply PR
+        if: ${{ github.event.inputs.prurl != 0 }}
+        run: |
+          cd  ~/drupal/web/sites/default/files/civicrm/ext/thingtotest
+          curl -o thingtopatch.patch ${{ github.event.inputs.prurl }}.patch
+          git apply thingtopatch.patch
+      - name: Run PHPUnit
+        run: |
+          mkdir $BROWSERTEST_OUTPUT_DIRECTORY
+          cd ~/drupal/web
+          ../vendor/bin/phpunit -c core sites/default/files/civicrm/ext/thingtotest/tests/phpunit/mink
+        env:
+          SYMFONY_DEPRECATIONS_HELPER: weak
+          DEV_EXTENSION_DIR: /home/runner/drupal/web/sites/default/files/civicrm/ext
+          SIMPLETEST_DB: mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db
+          SIMPLETEST_BASE_URL: http://127.0.0.1:8080
+          MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
+          BROWSERTEST_OUTPUT_DIRECTORY: '${{ runner.temp }}/browser_output'
+      - uses: actions/upload-artifact@v2
+        if: ${{ failure() || success() }}
+        with:
+          name: phpunit_browser_output
+          # For some reason Drupal prints here and not our specified BROWSERTEST_OUTPUT_DIRECTORY.
+          path: '/home/runner/drupal/web/sites/simpletest/browser_output'
