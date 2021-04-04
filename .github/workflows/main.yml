@@ -21,7 +21,7 @@ jobs:
         include:
           - drupal: '^9.1'
             civicrm: 'dev-master'
-    name: Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
+    name: ${{ github.event.inputs.repourl }} | Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
     services:
       mysql:
         image: mysql:5.7
