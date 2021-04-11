@@ -1,4 +1,4 @@
-name: ${{ github.event.inputs.prurl }} - Integration Tests
+name: Integration Tests
 on:
   pull_request:
     branches:
