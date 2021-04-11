@@ -101,5 +101,7 @@ jobs:
         if: ${{ failure() || success() }}
         with:
           name: phpunit_browser_output
-          # For some reason Drupal prints here and not our specified BROWSERTEST_OUTPUT_DIRECTORY.
+          # See https://www.drupal.org/project/drupal/issues/2992069#comment-12725521. Basically BROWSERTEST_OUTPUT_DIRECTORY
+          # is poorly named/documented. It only controls the location of a temp file that lists uris for the generated files.
+          # The actual location is ALWAYS `DRUPAL_ROOT . '/sites/simpletest/browser_output'`. See https://git.drupalcode.org/project/drupal/-/blob/af95c8490/core/tests/Drupal/Tests/BrowserHtmlDebugTrait.php#L145
           path: '/home/runner/drupal/web/sites/simpletest/browser_output'
