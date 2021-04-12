@@ -13,6 +13,9 @@ on:
       repourl:
         description: Repo Url
         required: false      
+      notifyemail:
+        description: Email to notify
+        required: false
 jobs:
   phpunit:
     runs-on: ubuntu-latest
@@ -105,3 +108,17 @@ jobs:
           # is poorly named/documented. It only controls the location of a temp file that lists uris for the generated files.
           # The actual location is ALWAYS `DRUPAL_ROOT . '/sites/simpletest/browser_output'`. See https://git.drupalcode.org/project/drupal/-/blob/af95c8490/core/tests/Drupal/Tests/BrowserHtmlDebugTrait.php#L145
           path: '/home/runner/drupal/web/sites/simpletest/browser_output'
+      - name: send notification email
+        # Don't run yet since this needs configuring
+        if: ${{ github.event.inputs.notifyemail == 'lkjsflkfjdsjfads' }}
+        uses: wadeww/send-email-action@v1
+        with:
+          server_address: smtp.mail.yahoo.com
+          port: 465
+          username: ${{secrets.MAIL_USERNAME}}
+          # This can be a temporary app password, not the real password
+          password: ${{secrets.MAIL_PASSWORD}}
+          subject: CiviCARROT job failure
+          body: Visit https://github.com/semperit/CiviCARROT/actions/runs/${{ github.run_id }} to view logs and artifacts.
+          to: ${{ todo.need.to.pass.this.in.from.web.service }}
+          from: civicarrot@semperit.com
