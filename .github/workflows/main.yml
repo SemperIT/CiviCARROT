@@ -120,5 +120,5 @@ jobs:
           password: ${{secrets.MAIL_PASSWORD}}
           subject: CiviCARROT job failure
           body: Visit https://github.com/semperit/CiviCARROT/actions/runs/${{ github.run_id }} to view logs and artifacts.
-          to: ${{ todo.need.to.pass.this.in.from.web.service }}
-          from: civicarrot@semperit.com
+          to: ${{ github.event.inputs.notifyemail }}
+          from: civicarrot@gmail.com
