@@ -110,10 +110,10 @@ jobs:
           path: '/home/runner/drupal/web/sites/simpletest/browser_output'
       - name: send notification email
         # Don't run yet since this needs configuring
-        if: ${{ github.event.inputs.notifyemail == 'lkjsflkfjdsjfads' }}
+        if: ${{ github.event.inputs.notifyemail != 0 }}
         uses: wadeww/send-email-action@v1
         with:
-          server_address: smtp.mail.yahoo.com
+          server_address: smtp.gmail.com
           port: 465
           username: ${{secrets.MAIL_USERNAME}}
           # This can be a temporary app password, not the real password
