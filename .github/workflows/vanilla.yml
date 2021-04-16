@@ -13,6 +13,9 @@ on:
       repourl:
         description: Repo Url
         required: false
+      notifyemail:
+        description: Notification email
+        required: false
 jobs:
   phpunit:
     runs-on: ubuntu-latest
@@ -98,3 +101,16 @@ jobs:
         env:
           COMPOSER_MEMORY_LIMIT: -1
           SYMFONY_DEPRECATIONS_HELPER: weak
+      - name: send notification email
+        if: ${{ failure() && (github.event.inputs.notifyemail != 0) }}
+        uses: wadeww/send-email-action@v1
+        with:
+          server_address: smtp.gmail.com
+          port: 465
+          username: ${{secrets.MAIL_USERNAME}}
+          # This can be a temporary app password, not the real password
+          password: ${{secrets.MAIL_PASSWORD}}
+          subject: CiviCARROT Unit tests ${{ github.event.inputs.repourl }}
+          body: Visit https://github.com/semperit/CiviCARROT/actions/runs/${{ github.run_id }} to view logs and artifacts.
+          to: ${{ github.event.inputs.notifyemail }}
+          from: civicarrot@gmail.com
