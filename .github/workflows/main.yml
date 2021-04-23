@@ -16,6 +16,9 @@ on:
       notifyemail:
         description: Email to notify
         required: false
+      activityid:
+        description: Civi activity id
+        required: false
 jobs:
   phpunit:
     runs-on: ubuntu-latest
@@ -42,6 +45,10 @@ jobs:
             extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, soap, intl, gd, exif, iconv
             coverage: none
             tools: composer:v1
+      - name: starttimer
+        run: |
+          cd $GITHUB_WORKSPACE
+          date +%s > carrottimerfile
       - name: Get composer cache directory
         id: composercache
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
@@ -121,3 +128,13 @@ jobs:
           body: Visit https://github.com/semperit/CiviCARROT/actions/runs/${{ github.run_id }} to view logs and artifacts.
           to: ${{ github.event.inputs.notifyemail }}
           from: civicarrot@gmail.com
+      - name: record stats
+        if: ${{ github.event.inputs.activityid != 0 }}
+        run: |
+          cd $GITHUB_WORKSPACE
+          STARTTIME=`cat carrottimerfile`
+          TIMEUSED=$(( `date +%s` - $STARTTIME ))
+          cd /home/runner/drupal/web/sites/simpletest/browser_output
+          SPACEUSED=`du -s | cut -f1`         
+          echo $SPACEUSED
+          curl --user ${{secrets.$REST_USER}}:${{secrets.$REST_PASS}} -X POST -H "Content-type: application/json" -d '{"id":${{ github.event.inputs.activityid }},"bytes":$SPACEUSED,"seconds":$TIMEUSED}' https://webform-civicrm.io/githubaction/${{ github.event.inputs.activityid }}
