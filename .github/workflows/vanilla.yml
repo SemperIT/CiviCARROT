@@ -16,6 +16,9 @@ on:
       notifyemail:
         description: Notification email
         required: false
+      activityid:
+        description: Civi activity id
+        required: false
 jobs:
   phpunit:
     runs-on: ubuntu-latest
