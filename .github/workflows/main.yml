@@ -137,4 +137,4 @@ jobs:
           cd /home/runner/drupal/web/sites/simpletest/browser_output
           SPACEUSED=`du -s | cut -f1`         
           echo $SPACEUSED
-          curl --user ${{secrets.$REST_USER}}:${{secrets.$REST_PASS}} -X POST -H "Content-type: application/json" -d '{"id":${{ github.event.inputs.activityid }},"bytes":$SPACEUSED,"seconds":$TIMEUSED}' https://webform-civicrm.io/githubaction/${{ github.event.inputs.activityid }}
+          curl --user ${{secrets.REST_USER}}:${{secrets.REST_PASS}} -X POST -H "Content-type: application/json" -d '{"id":${{ github.event.inputs.activityid }},"bytes":$SPACEUSED,"seconds":$TIMEUSED}' https://webform-civicrm.io/githubaction/${{ github.event.inputs.activityid }}
