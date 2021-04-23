@@ -141,4 +141,4 @@ jobs:
           TIMEUSED=$(( `date +%s` - $STARTTIME ))
           SPACEUSED=`cat carrotspacefile`         
           echo "{\"type":\"mink\",\"id\":${{ github.event.inputs.activityid }},\"bytes\":$SPACEUSED,\"seconds\":$TIMEUSED}"
-          curl --user ${{secrets.REST_USER}}:${{secrets.REST_PASS}} -X POST -H "Content-type: application/json" -d "{\"id\":${{ github.event.inputs.activityid }},\"bytes\":$SPACEUSED,\"seconds\":$TIMEUSED}" https://webform-civicrm.io/githubaction/${{ github.event.inputs.activityid }}
+          curl --user ${{secrets.REST_USER}}:${{secrets.REST_PASS}} -X POST -H "Content-type: application/json" -d "{\"type\":\"mink\",\"id\":${{ github.event.inputs.activityid }},\"bytes\":$SPACEUSED,\"seconds\":$TIMEUSED}" https://webform-civicrm.io/githubaction/${{ github.event.inputs.activityid }}
