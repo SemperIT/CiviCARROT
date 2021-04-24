@@ -127,7 +127,7 @@ jobs:
           cd $GITHUB_WORKSPACE
           STARTTIME=`cat carrottimerfile`
           TIMEUSED=$(( `date +%s` - $STARTTIME ))
-          # SPACEUSED=`cat carrotspacefile`         
-          SPACEUSED=0
+          # TODO: SPACEUSED=`cat carrotspacefile`         
+          SPACEUSED=00
           echo "{\"type\":\"plain\",\"id\":${{ github.event.inputs.activityid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED}"
           curl --user ${{secrets.REST_USER}}:${{secrets.REST_PASS}} -X POST -H "Content-type: application/json" -d "{\"type\":\"plain\",\"id\":${{ github.event.inputs.activityid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED}" https://webform-civicrm.io/githubaction/${{ github.event.inputs.activityid }}
