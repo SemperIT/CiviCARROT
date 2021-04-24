@@ -129,5 +129,5 @@ jobs:
           TIMEUSED=$(( `date +%s` - $STARTTIME ))
           # TODO: SPACEUSED=`cat carrotspacefile`         
           SPACEUSED=00
-          echo "{\"type\":\"plain\",\"id\":${{ github.event.inputs.activityid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED}"
-          curl --user ${{secrets.REST_USER}}:${{secrets.REST_PASS}} -X POST -H "Content-type: application/json" -d "{\"type\":\"plain\",\"id\":${{ github.event.inputs.activityid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED}" https://webform-civicrm.io/githubaction/${{ github.event.inputs.activityid }}
+          echo "{\"type\":\"plain\",\"id\":${{ github.event.inputs.activityid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED,\"repo\":\"${{ github.event.inputs.repourl }}\",\"pr\":\"${{ github.event.inputs.prurl }}\",\"run_id\":\"${{ github.run_id }}\"}"
+          curl --user ${{secrets.REST_USER}}:${{secrets.REST_PASS}} -X POST -H "Content-type: application/json" -d "{\"type\":\"plain\",\"id\":${{ github.event.inputs.activityid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED,\"repo\":\"${{ github.event.inputs.repourl }}\",\"pr\":\"${{ github.event.inputs.prurl }}\",\"run_id\":\"${{ github.run_id }}\"}" https://webform-civicrm.io/githubaction/${{ github.event.inputs.activityid }}
