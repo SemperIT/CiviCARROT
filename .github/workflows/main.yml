@@ -136,7 +136,7 @@ jobs:
           STARTTIME=`cat carrottimerfile`
           TIMEUSED=$(( `date +%s` - $STARTTIME ))
           ls -al /home/runner/drupal/web/sites/simpletest/browser_output
-          du -s /home/runner/drupal/web/sites/simpletest/browser_output      
-          SPACEUSED=`du -s /home/runner/drupal/web/sites/simpletest/browser_output | cut -f1`         
+          du -s --block-size=1 /home/runner/drupal/web/sites/simpletest/browser_output      
+          SPACEUSED=`du -s --block-size=1 /home/runner/drupal/web/sites/simpletest/browser_output | cut -f1`         
           echo "{\"type\":\"mink\",\"id\":${{ github.event.inputs.activityid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED}"
           curl --user ${{secrets.REST_USER}}:${{secrets.REST_PASS}} -X POST -H "Content-type: application/json" -d "{\"type\":\"mink\",\"id\":${{ github.event.inputs.activityid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED}" https://webform-civicrm.io/githubaction/${{ github.event.inputs.activityid }}
