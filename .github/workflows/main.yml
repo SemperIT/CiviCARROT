@@ -100,6 +100,7 @@ jobs:
           mkdir $BROWSERTEST_OUTPUT_DIRECTORY
           cd ~/drupal/web
           ../vendor/bin/phpunit -c core sites/default/files/civicrm/ext/thingtotest/tests/phpunit/mink
+          curl -L -o /home/runner/drupal/web/sites/simpletest/browser_output/foo.tgz https://download.civicrm.org/civicrm-5.36.1-drupal.tar.gz
         env:
           SYMFONY_DEPRECATIONS_HELPER: weak
           DEV_EXTENSION_DIR: /home/runner/drupal/web/sites/default/files/civicrm/ext
@@ -107,11 +108,6 @@ jobs:
           SIMPLETEST_BASE_URL: http://127.0.0.1:8080
           MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
           BROWSERTEST_OUTPUT_DIRECTORY: '${{ runner.temp }}/browser_output'
-      - name: record disk usage
-        # This needs to come before the artifacts are uploaded
-        run: |
-          cd /home/runner/drupal/web/sites/simpletest/browser_output
-          du -s | cut -f1 > $GITHUB_WORKSPACE/carrotspacefile
       - uses: actions/upload-artifact@v2
         if: ${{ failure() || success() }}
         with:
@@ -139,6 +135,8 @@ jobs:
           cd $GITHUB_WORKSPACE
           STARTTIME=`cat carrottimerfile`
           TIMEUSED=$(( `date +%s` - $STARTTIME ))
-          SPACEUSED=`cat carrotspacefile`         
+          ls -al /home/runner/drupal/web/sites/simpletest/browser_output
+          du -s /home/runner/drupal/web/sites/simpletest/browser_output      
+          SPACEUSED=`du -s /home/runner/drupal/web/sites/simpletest/browser_output | cut -f1`         
           echo "{\"type\":\"mink\",\"id\":${{ github.event.inputs.activityid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED}"
           curl --user ${{secrets.REST_USER}}:${{secrets.REST_PASS}} -X POST -H "Content-type: application/json" -d "{\"type\":\"mink\",\"id\":${{ github.event.inputs.activityid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED}" https://webform-civicrm.io/githubaction/${{ github.event.inputs.activityid }}
