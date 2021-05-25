@@ -131,3 +131,25 @@ jobs:
           SPACEUSED=00
           echo "{\"type\":\"plain\",\"id\":${{ github.event.inputs.activityid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED,\"repo\":\"${{ github.event.inputs.repourl }}\",\"pr\":\"${{ github.event.inputs.prurl }}\",\"run_id\":\"${{ github.run_id }}\"}"
           curl --user ${{secrets.REST_USER}}:${{secrets.REST_PASS}} -X POST -H "Content-type: application/json" -d "{\"type\":\"plain\",\"id\":${{ github.event.inputs.activityid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED,\"repo\":\"${{ github.event.inputs.repourl }}\",\"pr\":\"${{ github.event.inputs.prurl }}\",\"run_id\":\"${{ github.run_id }}\"}" https://civicrm.io/githubaction/${{ github.event.inputs.activityid }}
+      # It seems like there should be shorthand for this instead of 8 lines
+      - name: checkstatus1
+        if: ${{ success() && (github.event.inputs.prurl != 0) }}
+        run: |
+          echo "RUNSTATUS=PASS" >> $GITHUB_ENV
+      - name: checkstatus2
+        if: ${{ failure() && (github.event.inputs.prurl != 0) }}
+        run: |
+          echo "RUNSTATUS=FAIL" >> $GITHUB_ENV
+      - name: create comment on PR
+        if: ${{ github.event.inputs.prurl != 0 }}
+        run: |
+          prurl=${{ github.event.inputs.prurl }}
+          temp1=${prurl%/-/merge_requests/*}
+          projectname=${temp1#https://*/}
+          # close enough?
+          urlencoded=${projectname//\//%2F}
+          domain=${temp1%/$projectname}
+          mrid=${prurl##*/}
+          echo ${domain}/api/v4/projects/${urlencoded}/merge_requests/${mrid}/notes
+          # curl -H "Authorization: Bearer ${{secrets.LABCO_API_KEY}}" -X POST ${domain}/api/v4/projects/${urlencoded}/merge_requests/${mrid}/notes?body=${{ env.RUNSTATUS }}:+https:%2F%2Fgithub.com%2Fsemperit%2FCiviCARROT%2Factions%2Fruns%2F${{ github.run_id }}
+          
