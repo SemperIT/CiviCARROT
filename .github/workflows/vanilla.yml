@@ -151,5 +151,5 @@ jobs:
           domain=${temp1%/$projectname}
           mrid=${prurl##*/}
           echo ${domain}/api/v4/projects/${urlencoded}/merge_requests/${mrid}/notes
-          # curl -H "Authorization: Bearer ${{secrets.LABCO_API_KEY}}" -X POST ${domain}/api/v4/projects/${urlencoded}/merge_requests/${mrid}/notes?body=${{ env.RUNSTATUS }}:+https:%2F%2Fgithub.com%2Fsemperit%2FCiviCARROT%2Factions%2Fruns%2F${{ github.run_id }}
+          curl -H "Authorization: Bearer ${{secrets.LABCO_API_KEY}}" -X POST ${domain}/api/v4/projects/${urlencoded}/merge_requests/${mrid}/notes?body=${{ env.RUNSTATUS }}:+Unit+Tests:+https:%2F%2Fgithub.com%2Fsemperit%2FCiviCARROT%2Factions%2Fruns%2F${{ github.run_id }}
           
