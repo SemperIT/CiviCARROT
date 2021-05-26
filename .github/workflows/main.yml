@@ -7,6 +7,10 @@ on:
     branches:
       - main
     inputs:
+      civiver:
+        description: CiviCRM version
+        required: true
+        default: 'dev-master'
       prurl:
         description: PR Url
         required: false
@@ -26,7 +30,7 @@ jobs:
       matrix:
         include:
           - drupal: '^9.1'
-            civicrm: 'dev-master'
+            civicrm: ${{ github.event.inputs.civiver }}
     name: ${{ github.event.inputs.repourl }} | Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
     services:
       mysql:
