@@ -107,8 +107,9 @@ jobs:
           export PATH=$PATH:$GITHUB_WORKSPACE/civicrm-cv/bin
           export CIVICRM_UF=UnitTests
           export CIVICRM_SETTINGS=~/drupal/web/sites/default/civicrm.settings.php
-          cd ~/drupal/vendor/civicrm/civicrm-core
-          ../../bin/phpunit ../../../web/sites/default/files/civicrm/ext/thingtotest/tests/phpunit/CRM/
+          cd ~/drupal/web/sites/default/files/civicrm/ext/thingtotest
+          # this will use either phpunit.xml.dist or phpunit.xml depending on what they have, and hopefully pointing to a good bootstrap file
+          ~/drupal/vendor/bin/phpunit --group headless tests/phpunit
         env:
           COMPOSER_MEMORY_LIMIT: -1
           SYMFONY_DEPRECATIONS_HELPER: weak
