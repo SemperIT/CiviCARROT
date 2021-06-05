@@ -104,7 +104,7 @@ jobs:
           mkdir $BROWSERTEST_OUTPUT_DIRECTORY
           cd ~/drupal/web/sites/default/files/civicrm/ext/thingtotest
           # The config file should point to a proper bootstrap file, which needs to be similar to drupal's test bootstrap file.
-          ~drupal/vendor/bin/phpunit -c phpunit.mink.xml --group mink tests/phpunit
+          ~/drupal/vendor/bin/phpunit -c phpunit.mink.xml --group mink tests/phpunit
         env:
           SYMFONY_DEPRECATIONS_HELPER: weak
           DEV_EXTENSION_DIR: /home/runner/drupal/web/sites/default/files/civicrm/ext
