@@ -21,6 +21,9 @@ jobs:
           cd $GITHUB_WORKSPACE
           git clone https://github.com/totten/civix.git civix
           cd civix
+          # Make it work with composer v2
+          rm composer.lock
+          sed -i -e 's/civicrm\/cv".*/civicrm\/cv": "dev-master",/' composer.json
           COMPOSER_MEMORY_LIMIT=-1 composer install
           # patch it
           curl -L -o mink.patch https://github.com/totten/civix/compare/master...demeritcowboy:mink.patch
