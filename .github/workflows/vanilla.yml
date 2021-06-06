@@ -31,6 +31,8 @@ jobs:
         include:
           - drupal: '^9.1'
             civicrm: ${{ github.event.inputs.civiver }}
+          - drupal: '^9.1'
+            civicrm: 'dev-master'
     name: ${{ github.event.inputs.repourl }} | Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
     services:
       mysql:
@@ -48,7 +50,7 @@ jobs:
             php-version: 7.3
             extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, soap, intl, gd, exif, iconv
             coverage: none
-            tools: composer:v1
+            tools: composer:v2
       - name: starttimer
         run: |
           cd $GITHUB_WORKSPACE
