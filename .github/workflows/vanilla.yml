@@ -31,8 +31,6 @@ jobs:
         include:
           - drupal: '^9.1'
             civicrm: ${{ github.event.inputs.civiver }}
-          - drupal: '^9.1'
-            civicrm: 'dev-master'
     name: ${{ github.event.inputs.repourl }} | Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
     services:
       mysql:
@@ -70,6 +68,8 @@ jobs:
           cd $GITHUB_WORKSPACE
           git clone https://github.com/civicrm/cv.git civicrm-cv
           cd civicrm-cv
+          # downloads-plugin is locked at 2.1 but that doesn't work with composer v2
+          rm composer.lock
           COMPOSER_MEMORY_LIMIT=-1 composer install
       - name: Download Drupal
         run: |
