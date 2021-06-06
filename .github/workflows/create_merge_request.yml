@@ -47,7 +47,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: let us see it
-          path: '/home/runner/work/testCI/testCI/thing'
+          path: '/home/runner/work/CiviCARROT/CiviCARROT/thing'
       - name: fork project
         run: |
           repourl=${{ github.event.inputs.repourl }}
