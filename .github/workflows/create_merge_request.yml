@@ -15,7 +15,7 @@ jobs:
             php-version: 7.3
             extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, soap, intl, gd, exif, iconv
             coverage: none
-            tools: composer:v1
+            tools: composer:v2
       - name: Download civix
         run: |
           cd $GITHUB_WORKSPACE
@@ -78,6 +78,8 @@ jobs:
           # Now push our branch
           cd $GITHUB_WORKSPACE/thing
           git remote add mine https://civicarrot:${{secrets.LABCO_API_KEY}}@${baredomain}/civicarrot/${extname}.git
+          # Delete any existing branch called mink first if someone is trying again.
+          curl -H "Authorization: Bearer ${{secrets.LABCO_API_KEY}}" -X DELETE ${domain}/api/v4/projects/civicarrot%2F${extname}/repository/branches/mink
           git push -u mine mink
           # Now make a merge request
           curl -H "Authorization: Bearer ${{secrets.LABCO_API_KEY}}" -X POST ${domain}/api/v4/projects/civicarrot%2F${extname}/merge_requests?source_branch=mink\&target_branch=master\&target_project_id=${forkfromid}\&title=Your+first+Mink+test\&remove_source_branch=true\&allow_collaboration=true\&description=If+you+have+set+up+the+webhook,+this+will+have+started+an+automated+test+run+and+CiviCARROT+should+post+back+here+with+the+results+when+done.+When+you+make+changes+to+this+merge+request,+it+will+trigger+another+run+of+automated+tests+against+it.
