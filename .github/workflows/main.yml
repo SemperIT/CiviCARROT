@@ -30,7 +30,7 @@ jobs:
       matrix:
         include:
           - drupal: '^9.1'
-            civicrm: 'dev-master'
+            civicrm: ${{ github.event.inputs.civiver }}
     name: ${{ github.event.inputs.repourl }} | Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
     services:
       mysql:
