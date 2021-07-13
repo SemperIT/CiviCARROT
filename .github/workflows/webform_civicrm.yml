@@ -1,12 +1,8 @@
 name: Integration Tests
 on:
-  push:
-  pull_request:
-    branches:
-      - 8.x-5.x
   workflow_dispatch:
     branches:
-      - 8.x-5.x
+      - main
     inputs:
       prurl:
         description: PR Url
