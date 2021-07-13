@@ -1,4 +1,4 @@
-name: Integration Tests
+name: Webform-CiviCRM
 on:
   workflow_dispatch:
     branches:
@@ -21,7 +21,7 @@ jobs:
             civicrm: '~5.36'
           - drupal: '^9.1'
             civicrm: '5.39.x-dev'
-    name: Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
+    name: Webform-CiviCRM | Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
     services:
       mysql:
         image: mysql:5.7
