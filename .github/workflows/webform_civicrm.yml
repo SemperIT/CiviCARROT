@@ -7,18 +7,15 @@ on:
       prurl:
         description: PR Url
         required: false
+      matrix:
+        description: matrix in json format
+        required: true
+        default: '{"include":[{"php-versions":"CIVICARROT_PHP_SENSIBLE","drupal":"CIVICARROT_DRUPAL_LATEST","civicrm":"CIVICARROT_CIVI_RELEASECANDIDATE"}]}'
 jobs:
   phpunit:
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        include:
-          - drupal: '^8.9'
-            civicrm: '~5.33'
-          - drupal: '~9.1.1'
-            civicrm: '~5.40'
-          - drupal: '~9.2.1'
-            civicrm: '5.41.x-dev'
+      matrix: ${{ fromJson(github.event.inputs.matrix) }}
     name: Webform-CiviCRM | Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
     services:
       mysql:
@@ -33,7 +30,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: shivammathur/setup-php@v2
         with:
-            php-version: 7.3
+            php-version: ${{ matrix.php-versions }}
             extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, soap, intl, gd, exif, iconv
             coverage: none
             tools: composer:v2
