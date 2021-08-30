@@ -18,6 +18,10 @@ class PostResultsBackToMergeRequest extends WebDriverTestBase {
   protected $defaultTheme = 'stark';
 
   public function testComment() {
+    $x = getenv('DRUPALGIT_PASS');
+    if (empty($x)) {
+      throw new \Exception('env not work');
+    }
     $this->drupalGet('https://www.drupal.org/user/login?destination=gitlab/jwt');
     $this->getSession()->getPage()->fillField('name', 'civicarrot@gmail.com');
     $this->getSession()->getPage()->fillField('pass', getenv('DRUPALGIT_PASS'));
