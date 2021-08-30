@@ -116,7 +116,12 @@ jobs:
       - name: create comment on PR
         if: ${{ (success() || failure()) && (github.event.inputs.prurl != 0) }}
         run: |          
-          cd ~/drupal/web
+          cd ~/drupal/web          
           ../vendor/bin/phpunit -c core $GITHUB_WORKSPACE/drupalorg/PostResultsBackToMergeRequest.php
         env:
-           DRUPALGIT_PASS: ${{ secrets.DRUPALGIT_PASS }}
+          SYMFONY_DEPRECATIONS_HELPER: weak
+          SIMPLETEST_DB: mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db
+          SIMPLETEST_BASE_URL: http://127.0.0.1:8080
+          MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
+          BROWSERTEST_OUTPUT_DIRECTORY: '${{ runner.temp }}/browser_output'
+          DRUPALGIT_PASS: ${{ secrets.DRUPALGIT_PASS }}
