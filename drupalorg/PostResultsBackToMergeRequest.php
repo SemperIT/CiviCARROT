@@ -26,6 +26,7 @@ class PostResultsBackToMergeRequest extends WebDriverTestBase {
     $this->getSession()->getPage()->fillField('name', 'civicarrot@gmail.com');
     $this->getSession()->getPage()->fillField('pass', getenv('DRUPALGIT_PASS'));
     $this->getSession()->getPage()->pressButton('edit-submit');
+    $this->assertSession()->waitForElementVisible('css', 'a.shortcuts-activity');
     $this->assertSession()->pageTextContains('Your projects');
 
     // @todo Need to get this from action script via env
