@@ -10,7 +10,7 @@ on:
       matrix:
         description: matrix in json format
         required: true
-        default: '{"php-versions":["7.4"],"drupal":["~9.1.1"],"civicrm":["dev-master"]}'
+        default: '{"include":[{"php-versions":"CIVICARROT_PHP_SENSIBLE","drupal":"CIVICARROT_DRUPAL_LATEST","civicrm":"CIVICARROT_CIVI_RELEASECANDIDATE"}]}'
       prurl:
         description: PR Url
         required: false
