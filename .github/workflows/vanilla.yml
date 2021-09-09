@@ -20,8 +20,8 @@ on:
       notifyemail:
         description: Notification email
         required: false
-      activityid:
-        description: Civi activity id
+      contactid:
+        description: Civi contact id
         required: false
 jobs:
   phpunit:
@@ -129,15 +129,15 @@ jobs:
           to: ${{ github.event.inputs.notifyemail }}
           from: civicarrot@gmail.com
       - name: record stats
-        if: ${{ (success() || failure()) && (github.event.inputs.activityid != 0) }}
+        if: ${{ (success() || failure()) && (github.event.inputs.contactid != 0) }}
         run: |
           cd $GITHUB_WORKSPACE
           STARTTIME=`cat carrottimerfile`
           TIMEUSED=$(( `date +%s` - $STARTTIME ))
           # TODO: SPACEUSED=`cat carrotspacefile`         
           SPACEUSED=00
-          echo "{\"type\":\"plain\",\"id\":${{ github.event.inputs.activityid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED,\"repo\":\"${{ github.event.inputs.repourl }}\",\"pr\":\"${{ github.event.inputs.prurl }}\",\"run_id\":\"${{ github.run_id }}\"}"
-          curl --user ${{secrets.REST_USER}}:${{secrets.REST_PASS}} -X POST -H "Content-type: application/json" -d "{\"type\":\"plain\",\"id\":${{ github.event.inputs.activityid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED,\"repo\":\"${{ github.event.inputs.repourl }}\",\"pr\":\"${{ github.event.inputs.prurl }}\",\"run_id\":\"${{ github.run_id }}\"}" https://civicrm.io/githubaction/${{ github.event.inputs.activityid }}
+          echo "{\"type\":\"plain\",\"id\":${{ github.event.inputs.contactid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED,\"repo\":\"${{ github.event.inputs.repourl }}\",\"pr\":\"${{ github.event.inputs.prurl }}\",\"run_id\":\"${{ github.run_id }}\"}"
+          curl --user ${{secrets.REST_USER}}:${{secrets.REST_PASS}} -X POST -H "Content-type: application/json" -d "{\"type\":\"plain\",\"id\":${{ github.event.inputs.contactid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED,\"repo\":\"${{ github.event.inputs.repourl }}\",\"pr\":\"${{ github.event.inputs.prurl }}\",\"run_id\":\"${{ github.run_id }}\"}" https://civicrm.io/githubaction/${{ github.event.inputs.contactid }}
       # It seems like there should be shorthand for this instead of 8 lines
       - name: checkstatus1
         if: ${{ success() && (github.event.inputs.prurl != 0) }}
