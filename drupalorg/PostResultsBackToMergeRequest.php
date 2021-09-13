@@ -27,6 +27,7 @@ class PostResultsBackToMergeRequest extends WebDriverTestBase {
     $this->getSession()->getPage()->fillField('pass', getenv('DRUPALGIT_PASS'));
     $this->getSession()->getPage()->pressButton('edit-submit');
     $this->assertSession()->waitForElementVisible('css', 'a.shortcuts-activity');
+    file_put_contents('/home/runner/drupal/web/sites/simpletest/browser_output/WhyIsntThisWorking.jpg', $this->getSession()->getDriver()->getScreenshot());
     $this->assertSession()->pageTextContains('Your projects');
 
     // @todo Need to get this from action script via env
