@@ -98,12 +98,6 @@ jobs:
           SIMPLETEST_BASE_URL: http://127.0.0.1:8080
           MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
           BROWSERTEST_OUTPUT_DIRECTORY: '${{ runner.temp }}/browser_output'
-      - uses: actions/upload-artifact@v2
-        if: ${{ failure() || success() }}
-        with:
-          name: phpunit_browser_output
-          # For some reason Drupal prints here and not our specified BROWSERTEST_OUTPUT_DIRECTORY.
-          path: '/home/runner/drupal/web/sites/simpletest/browser_output'
 # It seems like there should be shorthand for this instead of 8 lines
       - name: checkstatus1
         if: ${{ success() && (github.event.inputs.prurl != 0) }}
@@ -125,3 +119,9 @@ jobs:
           MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
           BROWSERTEST_OUTPUT_DIRECTORY: '${{ runner.temp }}/browser_output'
           DRUPALGIT_PASS: ${{ secrets.DRUPALGIT_PASS }}
+      - uses: actions/upload-artifact@v2
+        if: ${{ failure() || success() }}
+        with:
+          name: phpunit_browser_output
+          # For some reason Drupal prints here and not our specified BROWSERTEST_OUTPUT_DIRECTORY.
+          path: '/home/runner/drupal/web/sites/simpletest/browser_output'
