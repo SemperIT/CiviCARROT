@@ -27,12 +27,12 @@ class PostResultsBackToMergeRequest extends WebDriverTestBase {
     $this->getSession()->getPage()->fillField('pass', getenv('DRUPALGIT_PASS'));
     $this->getSession()->getPage()->pressButton('edit-submit');
     $this->assertSession()->waitForElementVisible('css', 'a.shortcuts-activity');
-    file_put_contents('/home/runner/drupal/web/sites/simpletest/browser_output/WhyIsntThisWorking.jpg', $this->getSession()->getDriver()->getScreenshot());
+    file_put_contents('/home/runner/drupal/web/sites/simpletest/browser_output/NeedThisToForceRenderOrSomething.jpg', $this->getSession()->getDriver()->getScreenshot());
     $this->assertSession()->pageTextContains('Your projects');
 
-    // @todo Need to get this from action script via env
-    $this->drupalGet('https://git.drupalcode.org/sandbox/semperit-1280944/-/merge_requests/2');
+    $this->drupalGet(getenv('PRURL'));
     $this->assertSession()->waitForElementVisible('css', 'div.note-form-actions button.btn-confirm');
+    file_put_contents('/home/runner/drupal/web/sites/simpletest/browser_output/JustCurious.jpg', $this->getSession()->getDriver()->getScreenshot());
     $this->getSession()->getPage()->fillField('note-body', getenv('RUNSTATUS') . ': test automated merge request comment');
     $this->getSession()->getPage()->pressButton('Comment');
 
