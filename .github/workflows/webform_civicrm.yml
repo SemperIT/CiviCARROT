@@ -102,15 +102,15 @@ jobs:
       - name: checkstatus1
         if: ${{ success() && (github.event.inputs.prurl != 0) }}
         run: |
-          echo "RUNSTATUS=%E2%9C%94%EF%B8%8F+PASS" >> $GITHUB_ENV
+          echo "RUNSTATUS=✔ PASS" >> $GITHUB_ENV
       - name: checkstatus2
         if: ${{ failure() && (github.event.inputs.prurl != 0) }}
         run: |
-          echo "RUNSTATUS=%E2%9D%8C+FAIL" >> $GITHUB_ENV
+          echo "RUNSTATUS=❌ FAIL" >> $GITHUB_ENV
       - name: create comment on PR
         if: ${{ (success() || failure()) && (github.event.inputs.prurl != 0) }}
-        run: |          
-          cd ~/drupal/web          
+        run: |                    
+          cd ~/drupal/web
           ../vendor/bin/phpunit -c core $GITHUB_WORKSPACE/drupalorg/PostResultsBackToMergeRequest.php
         env:
           SYMFONY_DEPRECATIONS_HELPER: weak
@@ -119,6 +119,7 @@ jobs:
           MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
           BROWSERTEST_OUTPUT_DIRECTORY: '${{ runner.temp }}/browser_output'
           DRUPALGIT_PASS: ${{ secrets.DRUPALGIT_PASS }}
+          PRURL: ${{ github.event.inputs.prurl }}
       - uses: actions/upload-artifact@v2
         if: ${{ failure() || success() }}
         with:
