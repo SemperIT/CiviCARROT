@@ -27,6 +27,7 @@ jobs:
   phpunit:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix: ${{ fromJson(github.event.inputs.matrix) }}
     name: ${{ github.event.inputs.repourl }} | Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
     services:
