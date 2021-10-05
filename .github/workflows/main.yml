@@ -76,6 +76,7 @@ jobs:
         run: |
           COMPAREVERSIONS=`php -r 'echo version_compare("5.41.0", "${{ matrix.civicrm }}");'`
           if [ "$COMPAREVERSIONS" = "1" ]; then
+            cd ~/drupal
             COMPOSER_MEMORY_LIMIT=-1 composer require scssphp/scssphp:1.6.0
           fi
       - name: Download CiviCRM ${{ matrix.civicrm }}
