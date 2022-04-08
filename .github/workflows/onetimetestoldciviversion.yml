@@ -1,0 +1,122 @@
+name: Mink Tests
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    branches:
+      - main
+    inputs:
+      matrix:
+        description: matrix in json format
+        required: true
+        default: '{"include":[{"php-versions":"7.4","drupal":"~9.2.1","civicrm":"dev-master"}]}'
+      prurl:
+        description: PR Url
+        required: false
+      repourl:
+        description: Repo Url
+        required: false      
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(github.event.inputs.matrix) }}
+    name: ${{ github.event.inputs.repourl }} | Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: db
+        ports:
+          - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    steps:
+      - uses: actions/checkout@v2
+      - uses: shivammathur/setup-php@v2
+        with:
+            php-version: ${{ matrix.php-versions }}
+            extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, soap, intl, gd, exif, iconv, :imagick
+            coverage: none
+            tools: composer:v2
+      - name: starttimer
+        run: |
+          cd $GITHUB_WORKSPACE
+          date +%s > carrottimerfile
+      - name: Get composer cache directory
+        id: composercache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+      - uses: actions/cache@v2
+        with:
+            path: ${{ steps.composercache.outputs.dir }}
+            key: ${{ runner.os }}-${{ matrix.drupal }}-composer-${{ hashFiles('**/composer.json') }}
+            restore-keys: ${{ runner.os }}-composer-
+      - name: Setup problem matchers for PHPUnit
+        run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+      - name: Download Drupal
+        run: |
+          COMPOSER_MEMORY_LIMIT=-1 composer create-project drupal/recommended-project:${{ matrix.drupal }} ~/drupal --no-interaction
+          cd ~/drupal
+          composer config extra.enable-patching true
+          composer config extra.compile-mode all
+          composer config minimum-stability dev
+          composer config prefer-stable true
+          composer config preferred-install dist
+          composer config --no-interaction --no-plugins allow-plugins.composer/installers true
+          composer config --no-interaction --no-plugins allow-plugins.drupal/core-composer-scaffold true
+          composer config --no-interaction --no-plugins allow-plugins.drupal/core-project-message true
+          composer config --no-interaction --no-plugins allow-plugins.civicrm/composer-compile-plugin true
+          composer config --no-interaction --no-plugins allow-plugins.civicrm/composer-downloads-plugin true
+          composer config --no-interaction --no-plugins allow-plugins.civicrm/civicrm-asset-plugin true
+          composer config --no-interaction --no-plugins allow-plugins.cweagans/composer-patches true
+          # composer config repositories.0 composer https://packages.drupal.org/8
+          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/core-dev-pinned:${{ matrix.drupal }}      
+      - name: Download CiviCRM ${{ matrix.civicrm }}
+        run: |
+          cd ~/drupal
+          COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-core:dev-master#d06983a civicrm/civicrm-packages:dev-master#8586e1b civicrm/civicrm-drupal-8:dev-master#b55fb50 --prefer-dist
+      - name: Download mink-civicrm-helpers
+        run: |
+          cd ~/drupal
+          COMPOSER_MEMORY_LIMIT=-1 composer require semperit/minkcivicrmhelpers
+      - uses: nanasess/setup-chromedriver@master
+      - name: Run chromedriver
+        run: chromedriver &
+      - name: Run php built-in server
+        run: php -S 127.0.0.1:8080 -t ~/drupal/web &
+      - name: Get some code to test
+        if: ${{ github.event.inputs.repourl != 0 }}
+        run: |
+          mkdir -p ~/drupal/web/sites/default/files/civicrm/ext
+          cd ~/drupal/web/sites/default/files/civicrm/ext
+          git clone ${{ github.event.inputs.repourl }} thingtotest
+      - name: Apply PR
+        if: ${{ github.event.inputs.prurl != 0 }}
+        run: |
+          cd  ~/drupal/web/sites/default/files/civicrm/ext/thingtotest
+          curl -o thingtopatch.patch ${{ github.event.inputs.prurl }}.patch
+          git apply thingtopatch.patch
+      - name: Run PHPUnit
+        run: |
+          mkdir $BROWSERTEST_OUTPUT_DIRECTORY
+          cd ~/drupal/web/sites/default/files/civicrm/ext/thingtotest
+          # The xml config file should have a bootstrap attribute pointing to a proper bootstrap file, which needs to be similar to drupal's test bootstrap file.
+          ~/drupal/vendor/bin/phpunit -c phpunit.mink.xml.dist tests/phpunit/Mink
+        env:
+          SYMFONY_DEPRECATIONS_HELPER: weak
+          DEV_EXTENSION_DIR: /home/runner/drupal/web/sites/default/files/civicrm/ext
+          SIMPLETEST_DB: mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db
+          SIMPLETEST_BASE_URL: http://127.0.0.1:8080
+          MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
+          BROWSERTEST_OUTPUT_DIRECTORY: '${{ runner.temp }}/browser_output'
+      - uses: actions/upload-artifact@v2
+        if: ${{ failure() || success() }}
+        with:
+          name: phpunit_browser_output
+          # See https://www.drupal.org/project/drupal/issues/2992069#comment-12725521. Basically BROWSERTEST_OUTPUT_DIRECTORY
+          # is poorly named/documented. It only controls the location of a temp file that lists uris for the generated files.
+          # The actual location is ALWAYS `DRUPAL_ROOT . '/sites/simpletest/browser_output'`. See https://git.drupalcode.org/project/drupal/-/blob/af95c8490/core/tests/Drupal/Tests/BrowserHtmlDebugTrait.php#L145
+          path: '/home/runner/drupal/web/sites/simpletest/browser_output'
+     
