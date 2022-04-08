@@ -71,7 +71,7 @@ jobs:
       - name: Install webform_civicrm
         run: |
           cd ~/drupal
-          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/webform_civicrm *@dev
+          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/webform_civicrm:@dev
       - name: Install token
         run: |
           cd ~/drupal
