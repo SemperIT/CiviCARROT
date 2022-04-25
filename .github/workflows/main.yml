@@ -23,6 +23,9 @@ on:
       contactid:
         description: Civi contact id
         required: false
+      coreprurl:
+        description: Core PR Url
+        required: false
 jobs:
   phpunit:
     runs-on: ubuntu-latest
@@ -109,7 +112,13 @@ jobs:
         if: ${{ github.event.inputs.prurl != 0 }}
         run: |
           cd  ~/drupal/web/sites/default/files/civicrm/ext/thingtotest
-          curl -o thingtopatch.patch ${{ github.event.inputs.prurl }}.patch
+          curl -L -o thingtopatch.patch ${{ github.event.inputs.prurl }}.patch
+          git apply thingtopatch.patch
+      - name: Apply Core PR
+        if: ${{ github.event.inputs.coreprurl != 0 }}
+        run: |
+          cd  ~/drupal/vendor/civicrm/civicrm-core
+          curl -L -o thingtopatch.patch ${{ github.event.inputs.coreprurl }}.patch
           git apply thingtopatch.patch
       - name: Run PHPUnit
         run: |
