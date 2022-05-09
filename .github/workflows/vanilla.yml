@@ -118,6 +118,15 @@ jobs:
           mkdir -p ~/drupal/web/sites/default/files/civicrm/ext
           cd ~/drupal/web/sites/default/files/civicrm/ext
           git clone ${{ github.event.inputs.repourl }} thingtotest
+          DEPS=`php -r '$xml = simplexml_load_file("thingtotest/info.xml"); $deps = array(); foreach ($xml->requires as $req) { $deps[] = $req->ext; } echo implode(" ", $deps);'`
+          if [ -n "$DEPS" ]; then
+            for e in $DEPS; do
+              # Might need to be tolerant of failure here since it's possible to have dependencies that
+              # aren't in universe and that could still get installed by the tests themselves. But this
+              # whole system is really only designed for publicly reachable repos at the moment.
+              $GITHUB_WORKSPACE/civicrm-cv/bin/cv api3 Extension.download install=0 key=$e
+            done
+          fi
       - name: Apply PR
         if: ${{ github.event.inputs.prurl != 0 }}
         run: |
