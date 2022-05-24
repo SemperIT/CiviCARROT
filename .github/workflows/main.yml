@@ -24,6 +24,9 @@ on:
       coreprurl:
         description: Core PR Url
         required: false
+      cividrupal8prurl:
+        description: civi-drupal-8 PR Url
+        required: false
 jobs:
   phpunit:
     runs-on: ubuntu-latest
@@ -117,6 +120,12 @@ jobs:
         run: |
           cd  ~/drupal/vendor/civicrm/civicrm-core
           curl -L -o thingtopatch.patch ${{ github.event.inputs.coreprurl }}.patch
+          git apply thingtopatch.patch
+      - name: Apply Civi-Drupal-8 PR
+        if: ${{ github.event.inputs.cividrupal8prurl != 0 }}
+        run: |
+          cd  ~/drupal/web/modules/contrib/civicrm
+          curl -L -o thingtopatch.patch ${{ github.event.inputs.cividrupal8prurl }}.patch
           git apply thingtopatch.patch
       - name: Run PHPUnit
         run: |
