@@ -152,7 +152,6 @@ jobs:
           if [ -d tests/phpunit/api ]; then ~/drupal/vendor/bin/phpunit tests/phpunit/api; fi
         env:
           COMPOSER_MEMORY_LIMIT: -1
-          SYMFONY_DEPRECATIONS_HELPER: weak
       - name: send notification email
         if: ${{ failure() && (github.event.inputs.notifyemail != 0) }}
         uses: wadeww/send-email-action@v1
