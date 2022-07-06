@@ -67,7 +67,7 @@ jobs:
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
       - name: Download Drupal
         run: |
-          COMPOSER_MEMORY_LIMIT=-1 composer create-project drupal/recommended-project:${{ matrix.drupal }} ~/drupal --no-interaction
+          COMPOSER_MEMORY_LIMIT=-1 composer create-project drupal/recommended-project:${{ matrix.drupal }} ~/drupal --no-interaction --no-install
           cd ~/drupal
           composer config extra.enable-patching true
           composer config extra.compile-mode all
@@ -81,6 +81,8 @@ jobs:
           composer config --no-interaction --no-plugins allow-plugins.civicrm/composer-downloads-plugin true
           composer config --no-interaction --no-plugins allow-plugins.civicrm/civicrm-asset-plugin true
           composer config --no-interaction --no-plugins allow-plugins.cweagans/composer-patches true
+          composer config --no-interaction --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer install --no-interaction
           # composer config repositories.0 composer https://packages.drupal.org/8
           COMPOSER_MEMORY_LIMIT=-1 composer require drupal/core-dev-pinned:${{ matrix.drupal }}
       - name: Workaround too-looseness of scssphp requirement in civi
