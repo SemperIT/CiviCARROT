@@ -79,7 +79,7 @@ jobs:
           COMPOSER_MEMORY_LIMIT=-1 composer install
       - name: Download Drupal
         run: |
-          COMPOSER_MEMORY_LIMIT=-1 composer create-project drupal/recommended-project:${{ matrix.drupal }} ~/drupal --no-interaction
+          COMPOSER_MEMORY_LIMIT=-1 composer create-project drupal/recommended-project:${{ matrix.drupal }} ~/drupal --no-interaction --no-install
           cd ~/drupal
           composer config extra.enable-patching true
           composer config extra.compile-mode all
@@ -91,6 +91,8 @@ jobs:
           composer config --no-interaction --no-plugins allow-plugins.civicrm/composer-downloads-plugin true
           composer config --no-interaction --no-plugins allow-plugins.civicrm/civicrm-asset-plugin true
           composer config --no-interaction --no-plugins allow-plugins.cweagans/composer-patches true
+          composer config --no-interaction --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true      
+          composer install --no-interaction
       - name: Workaround too-looseness of scssphp requirement in civi
         run: |
           COMPAREVERSIONS=`php -r 'echo "${{ matrix.civicrm }}" == "dev-master" ? "-1" : version_compare("5.41.0", "${{ matrix.civicrm }}");'`
