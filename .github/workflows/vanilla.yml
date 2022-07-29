@@ -134,13 +134,13 @@ jobs:
         run: |
           cd  ~/drupal/web/sites/default/files/civicrm/ext/thingtotest
           curl -L -o thingtopatch.patch ${{ github.event.inputs.prurl }}.patch
-          git apply thingtopatch.patch
+          git am thingtopatch.patch
       - name: Apply Core PR
         if: ${{ github.event.inputs.coreprurl != 0 }}
         run: |
           cd  ~/drupal/vendor/civicrm/civicrm-core
           curl -L -o thingtopatch.patch ${{ github.event.inputs.coreprurl }}.patch
-          git apply thingtopatch.patch      
+          git am thingtopatch.patch      
       - name: Run PHPUnit
         run: |
           export PATH=$PATH:$GITHUB_WORKSPACE/civicrm-cv/bin
