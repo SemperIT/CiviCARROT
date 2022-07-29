@@ -111,24 +111,29 @@ jobs:
           mkdir -p ~/drupal/web/sites/default/files/civicrm/ext
           cd ~/drupal/web/sites/default/files/civicrm/ext
           git clone ${{ github.event.inputs.repourl }} thingtotest
+      - name: Set identity
+        # Needed for `git am`
+        run: |
+          git config --global user.email "civicarrot@gmail.com"
+          git config --global user.name "CiviCARROT"
       - name: Apply PR
         if: ${{ github.event.inputs.prurl != 0 }}
         run: |
           cd  ~/drupal/web/sites/default/files/civicrm/ext/thingtotest
           curl -L -o thingtopatch.patch ${{ github.event.inputs.prurl }}.patch
-          git apply thingtopatch.patch
+          git am thingtopatch.patch
       - name: Apply Core PR
         if: ${{ github.event.inputs.coreprurl != 0 }}
         run: |
           cd  ~/drupal/vendor/civicrm/civicrm-core
           curl -L -o thingtopatch.patch ${{ github.event.inputs.coreprurl }}.patch
-          git apply thingtopatch.patch
+          git am thingtopatch.patch
       - name: Apply Civi-Drupal-8 PR
         if: ${{ github.event.inputs.cividrupal8prurl != 0 }}
         run: |
           cd  ~/drupal/web/modules/contrib/civicrm
           curl -L -o thingtopatch.patch ${{ github.event.inputs.cividrupal8prurl }}.patch
-          git apply thingtopatch.patch
+          git am thingtopatch.patch
       - name: Run PHPUnit
         run: |
           mkdir $BROWSERTEST_OUTPUT_DIRECTORY
