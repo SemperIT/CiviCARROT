@@ -129,6 +129,11 @@ jobs:
               $GITHUB_WORKSPACE/civicrm-cv/bin/cv api3 Extension.download install=0 key=$e
             done
           fi
+      - name: Set identity
+        # Needed for `git am`
+        run: |
+          git config --global user.email "civicarrot@gmail.com"
+          git config --global user.name "CiviCARROT"
       - name: Apply PR
         if: ${{ github.event.inputs.prurl != 0 }}
         run: |
