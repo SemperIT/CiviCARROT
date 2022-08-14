@@ -8,7 +8,7 @@ on:
       matrix:
         description: matrix in json format
         required: true
-        default: '{"include":[{"php-versions":"7.4","drupal":"~9.2.1","civicrm":"dev-master"}]}'
+        default: '{"include":[{"php-versions":"7.4","drupal":"~9.4.1","civicrm":"dev-master"}]}'
       prurl:
         description: PR Url
         required: false
@@ -144,8 +144,8 @@ jobs:
         if: ${{ github.event.inputs.coreprurl != 0 }}
         run: |
           cd  ~/drupal/vendor/civicrm/civicrm-core
-          curl -L -o thingtopatch.patch ${{ github.event.inputs.coreprurl }}.patch
-          git am thingtopatch.patch      
+          curl -L -o thingtopatch.diff ${{ github.event.inputs.coreprurl }}.diff
+          git apply thingtopatch.diff
       - name: Run PHPUnit
         run: |
           export PATH=$PATH:$GITHUB_WORKSPACE/civicrm-cv/bin
