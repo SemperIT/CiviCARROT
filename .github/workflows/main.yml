@@ -55,6 +55,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           date +%s > carrottimerfile
+          echo "EXITEARLY=n" >> $GITHUB_ENV
       - name: Get composer cache directory
         id: composercache
         run: echo "::set-output name=dir::$(composer config cache-files-dir)"
@@ -116,25 +117,41 @@ jobs:
         run: |
           git config --global user.email "civicarrot@gmail.com"
           git config --global user.name "CiviCARROT"
-      - name: Apply PR
+      - name: Check if PR has closed early
         if: ${{ github.event.inputs.prurl != 0 }}
+        run: |
+          # Check if the PR is still open since the process started, e.g. a rebase just before merge.
+          prurl=${{ github.event.inputs.prurl }}
+          temp1=${prurl%/-/merge_requests/*}
+          projectname=${temp1#https://*/}
+          # close enough?
+          urlencoded=${projectname//\//%2F}
+          domain=${temp1%/$projectname}
+          mrid=${prurl##*/}
+          mrstate=`curl -H "Authorization: Bearer ${{secrets.LABCO_API_KEY}}" ${domain}/api/v4/projects/${urlencoded}/merge_requests/${mrid} | jq -r .state`
+          if [ "$mrstate" != "opened" ]; then
+            echo "EXITEARLY=y" >> $GITHUB_ENV
+          fi
+      - name: Apply PR
+        if: ${{ (github.event.inputs.prurl != 0) && (env.EXITEARLY != 'y') }}
         run: |
           cd  ~/drupal/web/sites/default/files/civicrm/ext/thingtotest
           curl -L -o thingtopatch.patch ${{ github.event.inputs.prurl }}.patch
           git am thingtopatch.patch
       - name: Apply Core PR
-        if: ${{ github.event.inputs.coreprurl != 0 }}
+        if: ${{ (github.event.inputs.coreprurl != 0) && (env.EXITEARLY != 'y') }}
         run: |
           cd  ~/drupal/vendor/civicrm/civicrm-core
           curl -L -o thingtopatch.diff ${{ github.event.inputs.coreprurl }}.diff
           git apply thingtopatch.diff
       - name: Apply Civi-Drupal-8 PR
-        if: ${{ github.event.inputs.cividrupal8prurl != 0 }}
+        if: ${{ (github.event.inputs.cividrupal8prurl != 0) && (env.EXITEARLY != 'y') }}
         run: |
           cd  ~/drupal/web/modules/contrib/civicrm
           curl -L -o thingtopatch.patch ${{ github.event.inputs.cividrupal8prurl }}.patch
           git am thingtopatch.patch
       - name: Run PHPUnit
+        if: ${{ env.EXITEARLY != 'y' }}
         run: |
           mkdir $BROWSERTEST_OUTPUT_DIRECTORY
           cd ~/drupal/web/sites/default/files/civicrm/ext/thingtotest
@@ -148,7 +165,7 @@ jobs:
           MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
           BROWSERTEST_OUTPUT_DIRECTORY: '${{ runner.temp }}/browser_output'
       - uses: actions/upload-artifact@v2
-        if: ${{ failure() || success() }}
+        if: ${{ (failure() || success()) && (env.EXITEARLY != 'y') }}
         with:
           name: phpunit_browser_output
           # See https://www.drupal.org/project/drupal/issues/2992069#comment-12725521. Basically BROWSERTEST_OUTPUT_DIRECTORY
@@ -156,7 +173,7 @@ jobs:
           # The actual location is ALWAYS `DRUPAL_ROOT . '/sites/simpletest/browser_output'`. See https://git.drupalcode.org/project/drupal/-/blob/af95c8490/core/tests/Drupal/Tests/BrowserHtmlDebugTrait.php#L145
           path: '/home/runner/drupal/web/sites/simpletest/browser_output'
       - name: send notification email
-        if: ${{ failure() && (github.event.inputs.notifyemail != 0) }}
+        if: ${{ failure() && (github.event.inputs.notifyemail != 0) && (env.EXITEARLY != 'y') }}
         uses: wadeww/send-email-action@v1
         with:
           server_address: smtp.gmail.com
@@ -187,7 +204,7 @@ jobs:
         run: |
           echo "RUNSTATUS=%E2%9D%8C+FAIL" >> $GITHUB_ENV
       - name: create comment on PR
-        if: ${{ (success() || failure()) && (github.event.inputs.prurl != 0) }}
+        if: ${{ (success() || failure()) && (github.event.inputs.prurl != 0) && (env.EXITEARLY != 'y') }}
         run: |
           prurl=${{ github.event.inputs.prurl }}
           temp1=${prurl%/-/merge_requests/*}
