@@ -141,15 +141,15 @@ jobs:
       - name: Apply Core PR
         if: ${{ (github.event.inputs.coreprurl != 0) && (env.EXITEARLY != 'y') }}
         run: |
-          cd  ~/drupal/vendor/civicrm/civicrm-core
+          cd ~/drupal/vendor/civicrm/civicrm-core
           curl -L -o thingtopatch.diff ${{ github.event.inputs.coreprurl }}.diff
           git apply thingtopatch.diff
       - name: Apply Civi-Drupal-8 PR
         if: ${{ (github.event.inputs.cividrupal8prurl != 0) && (env.EXITEARLY != 'y') }}
         run: |
-          cd  ~/drupal/web/modules/contrib/civicrm
-          curl -L -o thingtopatch.patch ${{ github.event.inputs.cividrupal8prurl }}.patch
-          git am thingtopatch.patch
+          cd ~/drupal/web/modules/contrib/civicrm
+          curl -L -o thingtopatch.diff ${{ github.event.inputs.cividrupal8prurl }}.diff
+          git apply thingtopatch.diff
       - name: Run PHPUnit
         if: ${{ env.EXITEARLY != 'y' }}
         run: |
