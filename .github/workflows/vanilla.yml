@@ -177,7 +177,7 @@ jobs:
         env:
           COMPOSER_MEMORY_LIMIT: -1
       - name: send notification email
-        if: ${{ failure() && (github.event.inputs.notifyemail != 0) && (env.EXITEARLY != 'y') }}
+        if: ${{ failure() && (github.event.inputs.notifyemail != 0) && (github.event.inputs.notifyemail != '[REDACTED]') && (env.EXITEARLY != 'y') }}
         uses: wadeww/send-email-action@v1
         with:
           server_address: smtp.gmail.com
