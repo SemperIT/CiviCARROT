@@ -166,8 +166,11 @@ jobs:
         if: ${{ env.EXITEARLY != 'y' }}
         run: |
           export PATH=$PATH:$GITHUB_WORKSPACE/civicrm-cv/bin
+          cd ~/drupal
+          cv vars:fill
+          sed -i -e 's#dbUser:dbPass@dbHost/dbName#root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db#' ~/.cv.json
           export CIVICRM_UF=UnitTests
-          export CIVICRM_SETTINGS=~/drupal/web/sites/default/civicrm.settings.php
+          # export CIVICRM_SETTINGS=~/drupal/web/sites/default/civicrm.settings.php
           cd ~/drupal/web/sites/default/files/civicrm/ext/thingtotest
           # TODO: We could do something like glob and iterate through any folders that are not Mink? But these are the only ones that typically autoload anyway.
           # This will use either phpunit.xml.dist or phpunit.xml depending on what they have, and hopefully that file points to a good bootstrap file
