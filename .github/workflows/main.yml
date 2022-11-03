@@ -14,7 +14,10 @@ on:
         required: false
       repourl:
         description: Repo Url
-        required: false      
+        required: false
+      repobranch:
+        description: Target Branch
+        required: false
       notifyemail:
         description: Email to notify
         required: false
@@ -111,7 +114,11 @@ jobs:
         run: |
           mkdir -p ~/drupal/web/sites/default/files/civicrm/ext
           cd ~/drupal/web/sites/default/files/civicrm/ext
-          git clone ${{ github.event.inputs.repourl }} thingtotest
+          if [ "${{ github.event.inputs.repobranch }}" != "0" ]; then
+            git clone -b ${{ github.event.inputs.repobranch }} ${{ github.event.inputs.repourl }} thingtotest
+          else
+            git clone ${{ github.event.inputs.repourl }} thingtotest
+          fi
       - name: Set identity
         # Needed for `git am`
         run: |
