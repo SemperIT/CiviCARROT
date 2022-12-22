@@ -50,7 +50,7 @@ jobs:
             php-version: ${{ matrix.php-versions }}
             extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, soap, intl, gd, exif, iconv
             coverage: none
-            tools: composer:v2
+            tools: composer:v2.4
       - name: starttimer
         run: |
           cd $GITHUB_WORKSPACE
