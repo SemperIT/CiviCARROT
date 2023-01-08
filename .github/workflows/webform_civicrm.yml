@@ -27,7 +27,7 @@ jobs:
           - 3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: shivammathur/setup-php@v2
         with:
             php-version: ${{ matrix.php-versions }}
@@ -38,8 +38,8 @@ jobs:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Get composer cache directory
         id: composercache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-      - uses: actions/cache@v2
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v3
         with:
             path: ${{ steps.composercache.outputs.dir }}
             key: ${{ runner.os }}-${{ matrix.drupal }}-composer-${{ hashFiles('**/composer.json') }}
@@ -54,26 +54,38 @@ jobs:
       # - CiviCRM requires `compile-mode: all`
       - name: Setup Drupal
         run: |
-          COMPOSER_MEMORY_LIMIT=-1 composer create-project drupal/recommended-project:${{ matrix.drupal }} ~/drupal --no-interaction
+          COMPOSER_MEMORY_LIMIT=-1 composer create-project drupal/recommended-project:${{ matrix.drupal }} ~/drupal --no-interaction --no-install
           cd ~/drupal
           composer config extra.enable-patching true
           composer config extra.compile-mode all
           composer config minimum-stability dev
           composer config prefer-stable true
           composer config preferred-install dist
-          composer config repositories.0 path $GITHUB_WORKSPACE
-          composer config repositories.1 composer https://packages.drupal.org/8
+          composer config allow-plugins.civicrm/composer-compile-plugin true
+          composer config allow-plugins.civicrm/composer-downloads-plugin true
+          composer config allow-plugins.civicrm/civicrm-asset-plugin true
+          composer config allow-plugins.cweagans/composer-patches true
+          composer config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer config repositories.0 composer https://packages.drupal.org/8
+          composer config repositories.1 path $GITHUB_WORKSPACE
           composer config repositories.2 vcs https://github.com/colemanw/webform_civicrm
+          composer install --no-interaction
           COMPOSER_MEMORY_LIMIT=-1 composer require drupal/core-dev-pinned:${{ matrix.drupal }}
+      - name: Suppress links to screenshots
+        # There's so many! They can be useful locally if running one test, but they aren't useful here and cause massive scrolling.
+        run: |
+          cd ~/drupal
+          curl -L -O https://raw.githubusercontent.com/colemanw/webform_civicrm/def72b3dce1ea4bc7dd2cdd28a72844885727789/DrupalHtmlOutputTrait.diff
+          git apply DrupalHtmlOutputTrait.diff
       - name: Install CiviCRM ${{ matrix.civicrm }}
         run: |
           cd ~/drupal
-          COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }} --prefer-dist
+          COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }} --prefer-dist -W
       # For some reason drupal/webform:5.x installs even if it is drupal:^9.0
       - name: Ensure Webform ^6.0
         run: |
           cd ~/drupal
-          COMPOSER_MEMORY_LIMIT=-1 composer require 'drupal/webform:6.x-dev@dev'
+          COMPOSER_MEMORY_LIMIT=-1 composer require 'drupal/webform:@dev'
       - name: Install webform_civicrm
         run: |
           cd ~/drupal
@@ -99,7 +111,7 @@ jobs:
           cd ~/drupal/web         
           ../vendor/bin/phpunit -c core modules/contrib/webform_civicrm
         env:
-          SYMFONY_DEPRECATIONS_HELPER: weak
+          SYMFONY_DEPRECATIONS_HELPER: 999999
           SIMPLETEST_DB: mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db
           SIMPLETEST_BASE_URL: http://127.0.0.1:8080
           MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
@@ -119,14 +131,14 @@ jobs:
           cd ~/drupal/web
           ../vendor/bin/phpunit -c core $GITHUB_WORKSPACE/drupalorg/PostResultsBackToMergeRequest.php
         env:
-          SYMFONY_DEPRECATIONS_HELPER: weak
+          SYMFONY_DEPRECATIONS_HELPER: 999999
           SIMPLETEST_DB: mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db
           SIMPLETEST_BASE_URL: http://127.0.0.1:8080
           MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
           BROWSERTEST_OUTPUT_DIRECTORY: '${{ runner.temp }}/browser_output'
           DRUPALGIT_PASS: ${{ secrets.DRUPALGIT_PASS }}
           PRURL: ${{ github.event.inputs.prurl }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
           name: phpunit_browser_output
