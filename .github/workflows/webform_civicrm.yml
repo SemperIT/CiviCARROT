@@ -85,11 +85,11 @@ jobs:
       - name: Ensure Webform ^6.0
         run: |
           cd ~/drupal
-          COMPOSER_MEMORY_LIMIT=-1 composer require 'drupal/webform:@dev'
+          COMPOSER_MEMORY_LIMIT=-1 composer require 'drupal/webform:6.x-dev@dev'
       - name: Install webform_civicrm
         run: |
           cd ~/drupal
-          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/webform_civicrm:6.x-dev
+          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/webform_civicrm:@dev
       - name: Install token
         run: |
           cd ~/drupal
