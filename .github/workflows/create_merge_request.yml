@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: shivammathur/setup-php@v2
         with:
-            php-version: 7.3
+            php-version: 7.4
             extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, soap, intl, gd, exif, iconv
             coverage: none
             tools: composer:v2
@@ -44,7 +44,7 @@ jobs:
           git config --global user.name "CiviCARROT"
           git config --global user.email "civicarrot@gmail.com"
           git commit -a -m "sample mink test"
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: let us see it
           path: '/home/runner/work/CiviCARROT/CiviCARROT/thing'
