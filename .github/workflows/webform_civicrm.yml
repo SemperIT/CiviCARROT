@@ -86,10 +86,12 @@ jobs:
         run: |
           cd ~/drupal
           COMPOSER_MEMORY_LIMIT=-1 composer require 'drupal/webform:^6.2@beta'
+          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/webform_civicrm:@dev
       - name: Ensure Webform ^6.0
         if: ${{ matrix.drupal != '10.0.*' }}
         run: |
           cd ~/drupal
+          COMPOSER_MEMORY_LIMIT=-1 composer require 'drupal/webform:6.x-dev@dev'
           COMPOSER_MEMORY_LIMIT=-1 composer require drupal/webform_civicrm:@dev
       - name: Install token
         run: |
