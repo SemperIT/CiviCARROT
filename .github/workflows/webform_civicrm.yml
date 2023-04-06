@@ -10,7 +10,7 @@ on:
       matrix:
         description: matrix in json format
         required: true
-        default: '{"include":[{"php-versions":"CIVICARROT_PHP_SENSIBLE","drupal":"CIVICARROT_DRUPAL_LATEST","civicrm":"CIVICARROT_CIVI_RELEASECANDIDATE"}]}'
+        default: '{"include":[{"php-versions":"CIVICARROT_PHP_SENSIBLE","drupal":"CIVICARROT_DRUPAL_PRIOR","civicrm":"CIVICARROT_CIVI_RELEASECANDIDATE"}]}'
 jobs:
   phpunit:
     runs-on: ubuntu-latest
@@ -81,19 +81,58 @@ jobs:
         run: |
           cd ~/drupal
           COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }} --prefer-dist -W
-      # For some reason drupal/webform:5.x installs even if it is drupal:^9.0
-      - name: Ensure Webform ^6.0
+      - name: Ensure Webform ^6.2
+        if: ${{ matrix.drupal == '10.0.*' }}
         run: |
           cd ~/drupal
-          COMPOSER_MEMORY_LIMIT=-1 composer require 'drupal/webform:6.x-dev@dev'
-      - name: Install webform_civicrm
+          COMPOSER_MEMORY_LIMIT=-1 composer require 'drupal/webform:^6.2@beta'
+      - name: Ensure Webform ^6.0
+        if: ${{ matrix.drupal != '10.0.*' }}
         run: |
           cd ~/drupal
           COMPOSER_MEMORY_LIMIT=-1 composer require drupal/webform_civicrm:@dev
       - name: Install token
         run: |
           cd ~/drupal
-          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/token:^1.9
+          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/token:^1.11
+      - name: Download some test helpers
+        run: |
+          cd ~/drupal
+          COMPOSER_MEMORY_LIMIT=-1 composer require semperit/minkcivicrmhelpers  
+      - name: Do a fake temp install
+        # so that we can use civi api to get extensions with a version appropriate to the installed civi version
+        run: |
+          cd ~/drupal
+          composer require drush/drush
+          mkdir -p /home/runner/civicrm-cv
+          curl -L https://download.civicrm.org/cv/cv.phar -o /home/runner/civicrm-cv/cv
+          chmod +x /home/runner/civicrm-cv/cv
+          ./vendor/drush/drush/drush -y -l http://civi.localhost site-install standard --db-url='mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/fakedb' --site-name=FakeCivi
+          chmod +w web/sites/default
+          /home/runner/civicrm-cv/cv core:install --cms-base-url=http://civi.localhost
+      - name: Download Civi extensions from git
+        if: ${{ matrix.drupal == '10.0.*' }}
+        run: |
+          mkdir -p ~/drupal/web/sites/default/files/civicrm/ext
+          cd ~/drupal/web/sites/default/files/civicrm/ext
+          /home/runner/civicrm-cv/cv api3 Extension.download install=0 key=com.aghstrategies.uscounties
+          # Let's get latest git versions of these
+          git clone https://lab.civicrm.org/extensions/mjwshared.git
+          git clone https://lab.civicrm.org/extensions/firewall.git
+          git clone https://lab.civicrm.org/extensions/stripe.git
+          git clone https://github.com/iATSPayments/com.iatspayments.civicrm.git
+      - name: Download Civi extensions normal
+        if: ${{ matrix.drupal != '10.0.*' }}
+        run: |
+          mkdir -p ~/drupal/web/sites/default/files/civicrm/ext
+          cd ~/drupal/web/sites/default/files/civicrm/ext
+          # Normally we'll just let civi decide which version to download.
+          # Apparently we have to install it, otherwise stripe gives a dependency error even with install=0. I think that's a bug, but let's just do it. This is a fake install anyway.
+          /home/runner/civicrm-cv/cv api3 Extension.download install=1 key=mjwshared
+          /home/runner/civicrm-cv/cv api3 Extension.download install=1 key=firewall
+          /home/runner/civicrm-cv/cv api3 Extension.download install=1 key=com.drastikbydesign.stripe
+          /home/runner/civicrm-cv/cv api3 Extension.download install=0 key=com.iatspayments.civicrm
+          /home/runner/civicrm-cv/cv api3 Extension.download install=0 key=com.aghstrategies.uscounties
       - uses: nanasess/setup-chromedriver@master
       - name: Run chromedriver
         run: chromedriver &
@@ -116,6 +155,8 @@ jobs:
           SIMPLETEST_BASE_URL: http://127.0.0.1:8080
           MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
           BROWSERTEST_OUTPUT_DIRECTORY: '${{ runner.temp }}/browser_output'
+          DEV_EXTENSION_DIR: /home/runner/drupal/web/sites/default/files/civicrm/ext
+          DEV_EXTENSION_URL: http://127.0.0.1:8080/sites/default/files/civicrm/ext
 # It seems like there should be shorthand for this instead of 8 lines
       - name: checkstatus1
         if: ${{ success() && (github.event.inputs.prurl != 0) }}
