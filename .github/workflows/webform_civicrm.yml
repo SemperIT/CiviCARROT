@@ -86,19 +86,15 @@ jobs:
         run: |
           cd ~/drupal
           COMPOSER_MEMORY_LIMIT=-1 composer require 'drupal/webform:^6.2@beta'
+          # This is the only syntax that works to get the 6.x branch when pulling from the vcs repo. For any other specific branch, dev-BRANCHNAME should work.
           COMPOSER_MEMORY_LIMIT=-1 composer require drupal/webform_civicrm:6.x-dev
       - name: Ensure Webform ^6.0
         if: ${{ matrix.drupal != '10.0.*' }}
         run: |
           cd ~/drupal
           COMPOSER_MEMORY_LIMIT=-1 composer require 'drupal/webform:6.x-dev@dev'
-          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/webform_civicrm:6.x-dev
-          /bin/false
-          exit -1
-          # COMPOSER_MEMORY_LIMIT=-1 composer require drupal/webform_civicrm
-          # TODO: just use git for now, figure out later
-          # cd web/modules/contrib
-          # git clone https://github.com/colemanw/webform_civicrm.git
+          # This is the only syntax that works to get the 6.x branch when pulling from the vcs repo. For any other specific branch, dev-BRANCHNAME should work.
+          COMPOSER_MEMORY_LIMIT=-1 composer require drupal/webform_civicrm:6.x-dev          
       - name: Install token
         run: |
           cd ~/drupal
