@@ -8,7 +8,7 @@ on:
       matrix:
         description: matrix in json format
         required: true
-        default: '{"include":[{"php-versions":"7.4","drupal":"~9.4.1","civicrm":"dev-master"}]}'
+        default: '{"include":[{"php-versions":"8.1","drupal":"~9.5.1","civicrm":"dev-master"}]}'
       prurl:
         description: PR Url
         required: false
@@ -89,13 +89,6 @@ jobs:
           composer install --no-interaction
           # composer config repositories.0 composer https://packages.drupal.org/8
           COMPOSER_MEMORY_LIMIT=-1 composer require drupal/core-dev-pinned:${{ matrix.drupal }}
-      - name: Workaround too-looseness of scssphp requirement in civi
-        run: |
-          COMPAREVERSIONS=`php -r 'echo "${{ matrix.civicrm }}" == "dev-master" ? "-1" : version_compare("5.41.0", "${{ matrix.civicrm }}");'`
-          if [ "$COMPAREVERSIONS" = "1" ]; then
-            cd ~/drupal
-            COMPOSER_MEMORY_LIMIT=-1 composer require scssphp/scssphp:1.6.0
-          fi
       - name: Download CiviCRM ${{ matrix.civicrm }}
         run: |
           cd ~/drupal
