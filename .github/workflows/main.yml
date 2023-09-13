@@ -98,9 +98,6 @@ jobs:
           cd ~/drupal
           COMPOSER_MEMORY_LIMIT=-1 composer require semperit/minkcivicrmhelpers
       - uses: nanasess/setup-chromedriver@master
-        with:
-          # This is temporary until the repo catches up with the right version
-          chromedriver-version: '115.0.5790.102'
       - name: Run chromedriver
         run: chromedriver &
       - name: Run php built-in server
