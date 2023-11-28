@@ -92,7 +92,12 @@ jobs:
       - name: Download CiviCRM ${{ matrix.civicrm }}
         run: |
           cd ~/drupal
-          COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }} pear/db:dev-trunk
+          COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }}
+      - name: test what happens with latest pear/db
+        run: |
+          cd ~/drupal/vendor/pear
+          rm -rf db
+          git clone https://github.com/pear/db.git
       - name: Download mink-civicrm-helpers
         run: |
           cd ~/drupal
