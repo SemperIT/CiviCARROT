@@ -101,7 +101,7 @@ jobs:
         run: |
           cd ~/drupal
           COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }}
-          if [ "${{ matrix.civicrm }}" != "dev-master" -a "${{ matrix.civicrm }}" != "5.68.x-dev" -a "${{ matrix.civicrm }}" != "5.67.2" -a "${{ matrix.civicrm }}" != "5.66.2" ]; then
+          if [ "${{ matrix.civicrm }}" != "dev-master" -a "${{ matrix.civicrm }}" != "5.68.x-dev" -a "${{ matrix.civicrm }}" != "5.67.3" -a "${{ matrix.civicrm }}" != "5.66.2" ]; then
             COMPOSER_MEMORY_LIMIT=-1 composer require phpunit/phpunit:'^8.5' drush/drush
           else
             COMPOSER_MEMORY_LIMIT=-1 composer require phpunit/phpunit:'^9.5' drush/drush
