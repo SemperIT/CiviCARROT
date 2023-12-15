@@ -163,6 +163,7 @@ jobs:
           cd ~/drupal/web/sites/default/files/civicrm/ext
           # Allow "unapproved" extensions
           $GITHUB_WORKSPACE/civicrm-cv/bin/cv ev '\Civi::settings()->set("ext_repo_url", "https://civicrm.org/extdir/ver={ver}|cms={uf}|ready=");'
+          $GITHUB_WORKSPACE/civicrm-cv/bin/cv ev '\Civi::settings()->set("http_timeout", 60);'
           DEPS=`php -r '$xml = simplexml_load_file("thingtotest/info.xml"); $deps = array(); foreach ($xml->requires as $req) { foreach ($req->ext as $ext) { $deps[] = $ext; } } echo implode(" ", $deps);'`
           if [ -n "$DEPS" ]; then
             for e in $DEPS; do
