@@ -96,7 +96,7 @@ jobs:
       - name: temp hack until fixed in core
         run: |
           cd ~/drupal/vendor/civicrm/civicrm-core/js
-          sed -i -e 's/\\n//' version.js
+          sed -i -e 's/\\n//' version.json
       - name: Download mink-civicrm-helpers
         run: |
           cd ~/drupal
