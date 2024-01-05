@@ -97,6 +97,8 @@ jobs:
         run: |
           cd ~/drupal/vendor/civicrm/civicrm-core/js
           sed -i -e 's/\\n//' version.json
+          cd ~/drupal
+          composer civicrm:publish
       - name: Download mink-civicrm-helpers
         run: |
           cd ~/drupal
