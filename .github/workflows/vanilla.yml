@@ -106,6 +106,10 @@ jobs:
           else
             COMPOSER_MEMORY_LIMIT=-1 composer require phpunit/phpunit:'^9.5' drush/drush
           fi
+      - name: temp hack until fixed in core
+        run: |
+          cd ~/drupal/vendor/civicrm/civicrm-core/js
+          sed -i -e 's/\\n//' version.js
       - name: Install Drupal
         run: |
           cd ~/drupal
