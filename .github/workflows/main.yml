@@ -93,6 +93,10 @@ jobs:
         run: |
           cd ~/drupal
           COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }}
+      - name: temp hack until fixed in core
+        run: |
+          cd ~/drupal/vendor/civicrm/civicrm-core/js
+          sed -i -e 's/\\n//' version.js
       - name: Download mink-civicrm-helpers
         run: |
           cd ~/drupal
