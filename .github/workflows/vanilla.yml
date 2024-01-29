@@ -171,8 +171,10 @@ jobs:
             for e in $DEPS; do
               # Might need to be tolerant of failure here since it's possible to have dependencies that
               # aren't in universe and that could still get installed by the tests themselves. But this
-              # whole system is really only designed for publicly reachable repos at the moment.
-              $GITHUB_WORKSPACE/civicrm-cv/bin/cv api3 Extension.download install=0 key=$e
+              # whole system is really only designed for publicly reachable repos at the moment. Also
+              # if you declare a dependency on a core extension, there's nothing to "download".
+              # By adding the `||` the exit code is the exit code of `echo`, which will be success.
+              $GITHUB_WORKSPACE/civicrm-cv/bin/cv api3 Extension.download install=0 key=$e || echo 'ignoring failure'
             done
           fi
       - name: Run PHPUnit
