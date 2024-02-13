@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(github.event.inputs.matrix) }}
-    name: ${{ github.event.inputs.repourl }} | Drupal ${{ matrix.drupal }} | CiviCRM ${{ matrix.civicrm }}
+    name: D ${{ matrix.drupal }} | Civi ${{ matrix.civicrm }} | ${{ github.event.inputs.repourl }}
     services:
       mysql:
         image: mysql:5.7
