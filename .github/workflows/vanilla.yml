@@ -8,7 +8,7 @@ on:
       matrix:
         description: matrix in json format
         required: true
-        default: '{"include":[{"php-versions":"8.1","drupal":"~9.5.1","civicrm":"dev-master"}]}'
+        default: '{"include":[{"php-versions":"8.1","drupal":"~10.1.1","civicrm":"dev-master"}]}'
       prurl:
         description: PR Url
         required: false
@@ -44,7 +44,7 @@ jobs:
           - 3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
         with:
             php-version: ${{ matrix.php-versions }}
@@ -59,7 +59,7 @@ jobs:
       - name: Get composer cache directory
         id: composercache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
             path: ${{ steps.composercache.outputs.dir }}
             key: ${{ runner.os }}-${{ matrix.drupal }}-composer-${{ hashFiles('**/composer.json') }}
