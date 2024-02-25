@@ -44,7 +44,7 @@ jobs:
           git config --global user.name "CiviCARROT"
           git config --global user.email "civicarrot@gmail.com"
           git commit -a -m "sample mink test"
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: let us see it
           path: '/home/runner/work/CiviCARROT/CiviCARROT/thing'
