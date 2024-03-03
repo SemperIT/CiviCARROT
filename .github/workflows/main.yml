@@ -144,12 +144,6 @@ jobs:
           cd ~/drupal/vendor/civicrm/civicrm-core
           curl -L -o thingtopatch.diff ${{ github.event.inputs.coreprurl }}.diff
           git apply thingtopatch.diff
-      - name: temp patch
-        if: ${{ matrix.civicrm }} == 'dev-master'
-        run: |
-          cd ~/drupal/vendor/civicrm/civicrm-core
-          curl -L -o temppatch.diff https://github.com/civicrm/civicrm-core/pull/29560.diff
-          git apply temppatch.diff
       - name: Apply Civi-Drupal-8 PR
         if: ${{ (github.event.inputs.cividrupal8prurl != 0) && (env.EXITEARLY != 'y') }}
         run: |
