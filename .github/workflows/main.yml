@@ -93,7 +93,6 @@ jobs:
         run: |
           cd ~/drupal
           COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }}
-          COMPOSER_MEMORY_LIMIT=-1 composer require tecnickcom/tcpdf:'6.7.4 as 6.4.4'
       - name: Download mink-civicrm-helpers
         run: |
           cd ~/drupal
