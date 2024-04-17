@@ -101,12 +101,7 @@ jobs:
         run: |
           cd ~/drupal
           COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }}
-          CANUSE95=`php -r 'echo version_compare("${{ matrix.civicrm }}", "5.65");'`
-          if [ "${{ matrix.civicrm }}" != "dev-master" -a "$CANUSE95" != "1" ]; then
-            COMPOSER_MEMORY_LIMIT=-1 composer require phpunit/phpunit:'^8.5' drush/drush
-          else
-            COMPOSER_MEMORY_LIMIT=-1 composer require phpunit/phpunit:'^9.5' drush/drush
-          fi
+          COMPOSER_MEMORY_LIMIT=-1 composer require phpunit/phpunit:'^9.5' drush/drush
       - name: Install Drupal
         run: |
           cd ~/drupal
