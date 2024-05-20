@@ -168,7 +168,7 @@ jobs:
       - name: Run PHPUnit
         if: ${{ env.EXITEARLY != 'y' }}
         run: |
-          mkdir $BROWSERTEST_OUTPUT_DIRECTORY
+          mkdir -p $BROWSERTEST_OUTPUT_DIRECTORY
           cd ~/drupal/web/sites/default/files/civicrm/ext/thingtotest
           # The xml config file should have a bootstrap attribute pointing to a proper bootstrap file, which needs to be similar to drupal's test bootstrap file.
           # The full path is needed for the config file to make this work in drupal 10.2. It shouldn't be needed for the last argument, but seems to be needed in drupal 9.5.
