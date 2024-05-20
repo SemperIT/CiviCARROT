@@ -178,8 +178,8 @@ jobs:
           DEV_EXTENSION_DIR: /home/runner/drupal/web/sites/default/files/civicrm/ext
           SIMPLETEST_DB: mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db
           SIMPLETEST_BASE_URL: http://127.0.0.1:8080
-          MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
-          BROWSERTEST_OUTPUT_DIRECTORY: '${{ runner.temp }}/browser_output'
+          MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","goog:chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
+          BROWSERTEST_OUTPUT_DIRECTORY: '/home/runner/drupal/web/sites/simpletest/browser_output'
       - name: Helper to make unique name for upload
         run: |
           # doing this on multiple lines to avoid quote-hell
@@ -194,6 +194,7 @@ jobs:
           # See https://www.drupal.org/project/drupal/issues/2992069#comment-12725521. Basically BROWSERTEST_OUTPUT_DIRECTORY
           # is poorly named/documented. It only controls the location of a temp file that lists uris for the generated files.
           # The actual location is ALWAYS `DRUPAL_ROOT . '/sites/simpletest/browser_output'`. See https://git.drupalcode.org/project/drupal/-/blob/af95c8490/core/tests/Drupal/Tests/BrowserHtmlDebugTrait.php#L145
+          # The above is still true in 9 and 10 but is fixed in 11 and the environment variable is used.
           path: '/home/runner/drupal/web/sites/simpletest/browser_output'
       - name: send notification email
         if: ${{ failure() && (github.event.inputs.notifyemail != 0) && (github.event.inputs.notifyemail != '[REDACTED]') && (env.EXITEARLY != 'y') }}
