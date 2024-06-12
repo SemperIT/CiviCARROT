@@ -93,13 +93,6 @@ jobs:
         run: |
           cd ~/drupal
           COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }}
-      - name: temp fix
-        if: ${{ matrix.civicrm == 'dev-master' || matrix.civicrm == '5.75.x-dev' }}
-        run: |
-          # temporary - delete this when problem is solved
-          cd ~/drupal/vendor/civicrm/civicrm-core
-          curl -L -O https://github.com/civicrm/civicrm-core/pull/30380.diff
-          git apply 30380.diff
       - name: Download mink-civicrm-helpers
         run: |
           cd ~/drupal
