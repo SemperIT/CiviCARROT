@@ -181,6 +181,7 @@ jobs:
           MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","goog:chromeOptions":{"args":["--disable-gpu", "--no-sandbox", "--headless"]}}, "http://127.0.0.1:9515"]'
           BROWSERTEST_OUTPUT_DIRECTORY: '/home/runner/drupal/web/sites/simpletest/browser_output'
       - name: Helper to make unique name for upload
+        if: ${{ (failure() || success()) && (env.EXITEARLY != 'y') }}
         run: |
           # doing this on multiple lines to avoid quote-hell
           cd ${{ runner.temp }}
