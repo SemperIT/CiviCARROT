@@ -149,7 +149,8 @@ jobs:
         run: |
           cd ~/drupal/vendor/civicrm/civicrm-core
           #curl -L -o thingtopatch2.diff https://github.com/demeritcowboy/civicrm-core/commit/5970163f272b8b7e6255181392757246ad77a106.diff
-          curl -L -o thingtopatch2.diff https://github.com/civicrm/civicrm-core/pull/31169.patch
+          #curl -L -o thingtopatch2.diff https://github.com/civicrm/civicrm-core/pull/31169.patch
+          curl -L -o thingtopatch2.diff https://github.com/civicrm/civicrm-core/pull/31215.patch
           git apply thingtopatch2.diff
       - name: Apply Civi-Drupal-8 PR
         if: ${{ (github.event.inputs.cividrupal8prurl != 0) && (env.EXITEARLY != 'y') }}
