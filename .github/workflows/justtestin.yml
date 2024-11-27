@@ -93,9 +93,9 @@ jobs:
       - name: Download CiviCRM ${{ matrix.civicrm }}
         run: |
           cd ~/drupal
-          composer config respositories.0 vcs https://github.com/colemanw/civicrm-core
-          composer config respositories.1 vcs https://github.com/demeritcowboy/civicrm-drupal-8
-          composer config respositories.2 composer https://packages.drupal.org/8
+          composer config repositories.0 vcs https://github.com/colemanw/civicrm-core
+          composer config repositories.1 vcs https://github.com/demeritcowboy/civicrm-drupal-8
+          composer config repositories.2 composer https://packages.drupal.org/8
           COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-core:dev-gitattributes civicrm/civicrm-drupal-8:dev-gitattributes civicrm/civicrm-packages:${{ matrix.civicrm }}
       - name: Download mink-civicrm-helpers
         run: |
