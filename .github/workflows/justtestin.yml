@@ -55,6 +55,8 @@ jobs:
             extensions: dom, curl, libxml, mbstring, zip, pdo, mysql, pdo_mysql, bcmath, soap, intl, gd, exif, iconv, :imagick
             coverage: none
             tools: composer:v2
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: starttimer
         run: |
           cd $GITHUB_WORKSPACE
