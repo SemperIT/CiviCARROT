@@ -180,7 +180,7 @@ jobs:
           export PATH=$PATH:$GITHUB_WORKSPACE/civicrm-cv/bin
           cd ~/drupal
           cv vars:fill
-          sed -i -e 's#dbUser:dbPass@dbHost/dbName#root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db#' ~/.cv.json
+          sed -i -e 's#dbUser:dbPass@dbHost/dbName#root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db#' $XDG_CONFIG_HOME/.cv.json
           export CIVICRM_UF=UnitTests
           # export CIVICRM_SETTINGS=~/drupal/web/sites/default/civicrm.settings.php
           PHPUNITARGS=--verbose
