@@ -193,7 +193,7 @@ jobs:
           else
             PHPUNITARGS="$PHPUNITARGS -c ~/drupal/web/sites/default/files/civicrm/ext/thingtotest/phpunit.mink.xml.dist"
           fi
-           The full path shouldn't be needed for the last argument, but seems to be needed in drupal 9.5.
+          # The full path shouldn't be needed for the last argument, but seems to be needed in drupal 9.5.
           ~/drupal/vendor/bin/phpunit $PHPUNITARGS ~/drupal/web/sites/default/files/civicrm/ext/thingtotest/tests/phpunit/Mink
         env:
           SYMFONY_DEPRECATIONS_HELPER: 999999
