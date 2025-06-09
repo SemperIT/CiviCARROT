@@ -112,7 +112,7 @@ jobs:
       - name: Install CiviCRM
         run: |
           cd ~/drupal
-          $GITHUB_WORKSPACE/civicrm-cv/bin/cv core:install --cms-base-url=http://civi.localhost -m loadGenerated=1
+          $GITHUB_WORKSPACE/civicrm-cv/bin/cv core:install --url=http://civi.localhost -m loadGenerated=1
           cd web/sites/default
       - name: Get some code to test
         if: ${{ github.event.inputs.repourl != 0 }}
