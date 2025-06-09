@@ -188,9 +188,12 @@ jobs:
           if [ "$PHPUNIT10" == "1" ]; then
             PHPUNITARGS="--display-skipped --display-deprecations --display-errors --display-warnings --display-notices"
           fi
+          if [ "${{ matrix.phpunit-xml }}" != "" ]; then
+            # If not specified it will try phpunit.xml.dist or phpunit.xml depending on what they have, and hopefully that file points to a good bootstrap file
+            PHPUNITARGS="$PHPUNITARGS -c ${{ matrix.phpunit-xml }}"
+          fi
           cd ~/drupal/web/sites/default/files/civicrm/ext/thingtotest
           # TODO: We could do something like glob and iterate through any folders that are not Mink? But these are the only ones that typically autoload anyway.
-          # This will use either phpunit.xml.dist or phpunit.xml depending on what they have, and hopefully that file points to a good bootstrap file
           if [ -d tests/phpunit/CRM ]; then ~/drupal/vendor/bin/phpunit $PHPUNITARGS tests/phpunit/CRM; fi
           if [ -d tests/phpunit/Civi ]; then ~/drupal/vendor/bin/phpunit $PHPUNITARGS tests/phpunit/Civi; fi
           if [ -d tests/phpunit/api ]; then ~/drupal/vendor/bin/phpunit $PHPUNITARGS tests/phpunit/api; fi
