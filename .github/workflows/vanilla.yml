@@ -102,7 +102,7 @@ jobs:
         run: |
           cd ~/drupal
           composer config 'preferred-install.civicrm/*' 'source'
-          COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }} padaliyajay/php-autoprefixer:1.4
+          COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }}
           COMPOSER_MEMORY_LIMIT=-1 composer require -w phpunit/phpunit:'^9 || ^10' drush/drush
       - name: Install Drupal
         run: |
