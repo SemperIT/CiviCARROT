@@ -96,7 +96,7 @@ jobs:
           composer config --no-interaction --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer install --no-interaction
           # composer config repositories.0 composer https://packages.drupal.org/8
-          COMPOSER_MEMORY_LIMIT=-1 composer require -w drupal/core-dev-pinned:${{ matrix.drupal }}
+          COMPOSER_MEMORY_LIMIT=-1 composer require -w drupal/core-dev:${{ matrix.drupal }}
       - name: Download CiviCRM ${{ matrix.civicrm }}
         run: |
           cd ~/drupal
