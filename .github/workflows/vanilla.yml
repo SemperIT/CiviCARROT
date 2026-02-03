@@ -102,7 +102,7 @@ jobs:
         run: |
           cd ~/drupal
           composer config 'preferred-install.civicrm/*' 'source'
-          COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }} sabberworm/php-css-parser:'~8.9.0' brick/math:'0.14.1' brick/money:'0.11.0'
+          COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }} sabberworm/php-css-parser:'~8.9.0' brick/math:'0.13.1' brick/money:'0.10.3'
           COMPOSER_MEMORY_LIMIT=-1 composer require -w phpunit/phpunit:'^9 || ^10' drush/drush
       - name: Install Drupal
         run: |
