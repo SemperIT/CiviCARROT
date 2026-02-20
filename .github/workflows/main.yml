@@ -93,7 +93,7 @@ jobs:
       - name: Download CiviCRM ${{ matrix.civicrm }}
         run: |
           cd ~/drupal
-          COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }} sabberworm/php-css-parser:'~8.9.0' brick/math:'0.13.1' brick/money:'0.10.3'
+          COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }} sabberworm/php-css-parser:'~8.9.0' brick/math:'0.13.1' brick/money:'0.10.3' firebase/php-jwt:'7.0.2 as 6.11.1'
       - name: Download mink-civicrm-helpers
         run: |
           cd ~/drupal
