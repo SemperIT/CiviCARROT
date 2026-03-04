@@ -151,12 +151,6 @@ jobs:
           cd ~/drupal/web/modules/contrib/civicrm
           curl -L -o thingtopatch.diff ${{ github.event.inputs.cividrupal8prurl }}.diff
           git apply thingtopatch.diff
-      # see https://github.com/tecnickcom/TCPDF/issues/858
-      - name: temp fix for tcpdf
-        run: |
-          cd ~/drupal/vendor/tecnickcom/tcpdf
-          curl -L -O https://raw.githubusercontent.com/semperIT/CiviCARROT/main/tcpdf.diff
-          patch -p0 < tcpdf.diff
       - name: Download extension dependencies
         if: ${{ (github.event.inputs.repourl != 0) && (env.EXITEARLY != 'y') }}
         run: |
