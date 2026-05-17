@@ -77,6 +77,9 @@ jobs:
           curl -L -O https://raw.githubusercontent.com/drupal/recommended-project/refs/heads/main/composer.json
           composer config extra.enable-patching true
           composer config extra.compile-mode all
+          composer config allow-plugins.civicrm/composer-compile-plugin true
+          composer config allow-plugins.civicrm/composer-downloads-plugin true
+          composer config allow-plugins.civicrm/civicrm-asset-plugin true
           composer config --no-interaction --no-plugins allow-plugins.cweagans/composer-patches true
           composer config --no-interaction allow-plugins.tbachert/spi true
           composer install --no-interaction
