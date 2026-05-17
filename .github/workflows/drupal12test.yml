@@ -1,4 +1,4 @@
-name: Mink Tests
+name: Mink Tests drupal 12 test
 on:
   pull_request:
     branches:
