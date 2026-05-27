@@ -90,8 +90,7 @@ jobs:
           composer config extra.compile-mode all
           composer config minimum-stability dev
           # temporary until upstream decides what to do with symfony/polyfill-intl-idn
-          composer config policy.advisories.block false
-          composer config policy.advisories.audit report
+          composer config audit.block-insecure false
           composer config --no-interaction --no-plugins allow-plugins.composer/installers true
           composer config --no-interaction --no-plugins allow-plugins.drupal/core-composer-scaffold true
           composer config --no-interaction --no-plugins allow-plugins.drupal/core-project-message true
