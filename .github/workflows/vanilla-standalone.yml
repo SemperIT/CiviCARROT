@@ -133,10 +133,11 @@ jobs:
           domain=${temp1%/$projectname}
           mrid=${prurl##*/}
           apioutput=`curl -H "Authorization: Bearer ${{secrets.LABCO_API_KEY}}" ${domain}/api/v4/projects/${urlencoded}/merge_requests/${mrid}`
-          echo $apioutput
           mrstate=`echo ${apioutput} | jq -r .state`
           if [ "$mrstate" != "opened" ]; then
             echo "EXITEARLY=y" >> $GITHUB_ENV
+            # help debug in case it was some kind of failure
+            echo $apioutput          
           fi
       - name: Apply PR
         if: ${{ (github.event.inputs.prurl != 0) && (env.EXITEARLY != 'y') }}
