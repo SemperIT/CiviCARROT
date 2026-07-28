@@ -132,7 +132,9 @@ jobs:
           urlencoded=${projectname//\//%2F}
           domain=${temp1%/$projectname}
           mrid=${prurl##*/}
-          mrstate=`curl -H "Authorization: Bearer ${{secrets.LABCO_API_KEY}}" ${domain}/api/v4/projects/${urlencoded}/merge_requests/${mrid} | jq -r .state`
+          apioutput=`curl -H "Authorization: Bearer ${{secrets.LABCO_API_KEY}}" ${domain}/api/v4/projects/${urlencoded}/merge_requests/${mrid}`
+          echo $apioutput
+          mrstate=`echo ${apioutput} | jq -r .state`
           if [ "$mrstate" != "opened" ]; then
             echo "EXITEARLY=y" >> $GITHUB_ENV
           fi
