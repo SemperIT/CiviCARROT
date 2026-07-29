@@ -142,14 +142,14 @@ jobs:
         if: ${{ github.event.inputs.repourl != 0 }}
         run: |
           if [ "${{ matrix.cms }}" != "standalone" ]; then
-            echo "EXTENSIONFOLDER=drupal/ext" >> $GITHUB_ENV
-            # the env var isn't available until the next action step, so need to spell this out and duplicate in the "else" clause too.
-            mkdir -p ~/drupal/ext
-            cd ~/drupal/ext
-          else
             echo "EXTENSIONFOLDER=drupal/web/sites/default/files/civicrm/ext" >> $GITHUB_ENV
+            # the env var isn't available until the next action step, so need to spell this out and duplicate in the "else" clause too.
             mkdir -p ~/drupal/web/sites/default/files/civicrm/ext
             cd ~/drupal/web/sites/default/files/civicrm/ext
+          else
+            echo "EXTENSIONFOLDER=drupal/ext" >> $GITHUB_ENV
+            mkdir -p ~/drupal/ext
+            cd ~/drupal/ext
           fi
           if [ "${{ github.event.inputs.repobranch }}" != "" ]; then
             git clone -b ${{ github.event.inputs.repobranch }} ${{ github.event.inputs.repourl }} thingtotest
