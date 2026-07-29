@@ -8,7 +8,7 @@ on:
       matrix:
         description: matrix in json format
         required: true
-        default: '{"include":[{"php-versions":"8.3","drupal":"~10.3.1","civicrm":"dev-master"}]}'
+        default: '{"include":[{"php-versions":"8.3","cms":"drupal","drupal":"~10.3.1","civicrm":"dev-master"}]}'
       prurl:
         description: PR Url
         required: false
@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(github.event.inputs.matrix) }}
-    name: D${{ matrix.drupal }} | Civi ${{ matrix.civicrm }} | ${{ github.event.inputs.repourl }}
+    name: ${{ matrix.cms }} | D${{ matrix.drupal }} | C ${{ matrix.civicrm }} | ${{ github.event.inputs.repourl }}
     services:
       mysql:
         image: mariadb:10.6
@@ -43,7 +43,7 @@ jobs:
           MARIADB_DATABASE: db
         ports:
           - 3306
-        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout=5s --health-retries=3        
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
       - uses: actions/checkout@v6
       - uses: shivammathur/setup-php@v2
@@ -75,14 +75,13 @@ jobs:
           # downloads-plugin is locked at 2.1 but that doesn't work with composer v2
           rm composer.lock
           composer config --no-interaction --no-plugins allow-plugins.composer/installers true
-          composer config --no-interaction --no-plugins allow-plugins.drupal/core-composer-scaffold true
-          composer config --no-interaction --no-plugins allow-plugins.drupal/core-project-message true
           composer config --no-interaction --no-plugins allow-plugins.civicrm/composer-compile-plugin true
           composer config --no-interaction --no-plugins allow-plugins.civicrm/composer-downloads-plugin true
           composer config --no-interaction --no-plugins allow-plugins.civicrm/civicrm-asset-plugin true
           composer config --no-interaction --no-plugins allow-plugins.cweagans/composer-patches true
           COMPOSER_MEMORY_LIMIT=-1 composer install
       - name: Download Drupal
+        if: ${{ matrix.cms == 'drupal' }}
         run: |
           COMPOSER_MEMORY_LIMIT=-1 composer create-project drupal/recommended-project:${{ matrix.drupal }} ~/drupal --no-interaction --no-install
           cd ~/drupal
@@ -96,15 +95,40 @@ jobs:
           composer config --no-interaction --no-plugins allow-plugins.civicrm/composer-downloads-plugin true
           composer config --no-interaction --no-plugins allow-plugins.civicrm/civicrm-asset-plugin true
           composer config --no-interaction --no-plugins allow-plugins.cweagans/composer-patches true
-          composer config --no-interaction --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true      
-          composer install --no-interaction      
+          composer config --no-interaction --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer install --no-interaction
       - name: Download CiviCRM ${{ matrix.civicrm }}
+        if: ${{ matrix.cms == 'drupal' }}
         run: |
           cd ~/drupal
           composer config 'preferred-install.civicrm/*' 'source'
           COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }} sabberworm/php-css-parser:'~8.9.0' brick/math:'0.13.1' brick/money:'0.10.3' firebase/php-jwt:'7.0.2 as 6.11.1'
           COMPOSER_MEMORY_LIMIT=-1 composer require -w phpunit/phpunit:'^9 || ^10' drush/drush
+      - name: Download CiviCRM Standalone ${{ matrix.civicrm }}
+        if: ${{ matrix.cms == 'standalone' }}
+        run: |
+          cd ~
+          # we call the folder drupal just to make the shared bits in this file easier
+          git clone --depth 1 https://github.com/civicrm/civicrm-standalone.git drupal
+          cd drupal
+          composer config extra.enable-patching true
+          composer config extra.compile-mode all
+          composer config minimum-stability dev
+          composer config --no-interaction --no-plugins allow-plugins.composer/installers true
+          composer config --no-interaction --no-plugins allow-plugins.civicrm/composer-compile-plugin true
+          composer config --no-interaction --no-plugins allow-plugins.civicrm/composer-downloads-plugin true
+          composer config --no-interaction --no-plugins allow-plugins.civicrm/civicrm-asset-plugin true
+          composer config --no-interaction --no-plugins allow-plugins.cweagans/composer-patches true
+          composer config --no-interaction --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer config 'preferred-install.civicrm/*' 'source'
+          if [ "${{ matrix.civicrm }}" != "dev-master" ]; then
+            sed -i -e 's#"civicrm-core": "dev-master"#"civicrm-core": "${{ matrix.civicrm }}"#' composer.json
+            sed -i -e 's#"civicrm-packages": "dev-master"#"civicrm-packages": "${{ matrix.civicrm }}"#' composer.json
+          fi
+          composer install --no-interaction
+          COMPOSER_MEMORY_LIMIT=-1 composer require -w phpunit/phpunit:'^9'
       - name: Install Drupal
+        if: ${{ matrix.cms == 'drupal' }}
         run: |
           cd ~/drupal
           ./vendor/drush/drush/drush -y -l http://civi.localhost site-install standard --db-url='mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db' --site-name=TestCivi --account-pass=admin
@@ -112,13 +136,19 @@ jobs:
       - name: Install CiviCRM
         run: |
           cd ~/drupal
-          $GITHUB_WORKSPACE/civicrm-cv/bin/cv core:install --url=http://civi.localhost -m loadGenerated=1
-          cd web/sites/default
+          # the db param is the same as the default for drupal but is required for standalone
+          $GITHUB_WORKSPACE/civicrm-cv/bin/cv core:install --url=http://civi.localhost -m loadGenerated=1 --db='mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db'
       - name: Get some code to test
         if: ${{ github.event.inputs.repourl != 0 }}
         run: |
-          mkdir -p ~/drupal/web/sites/default/files/civicrm/ext
-          cd ~/drupal/web/sites/default/files/civicrm/ext
+          if [ "${{ matrix.cms }}" == "drupal" ]; then
+            echo "EXTENSIONFOLDER=drupal/web/sites/default/files/civicrm/ext" >> $GITHUB_ENV
+            mkdir -p ~/drupal/web/sites/default/files/civicrm/ext
+          else
+            echo "EXTENSIONFOLDER=drupal/ext" >> $GITHUB_ENV
+            mkdir -p ~/drupal/ext
+          fi
+          cd ~/${{ env.EXTENSIONFOLDER }}
           if [ "${{ github.event.inputs.repobranch }}" != "" ]; then
             git clone -b ${{ github.event.inputs.repobranch }} ${{ github.event.inputs.repourl }} thingtotest
           else
@@ -140,14 +170,17 @@ jobs:
           urlencoded=${projectname//\//%2F}
           domain=${temp1%/$projectname}
           mrid=${prurl##*/}
-          mrstate=`curl -H "Authorization: Bearer ${{secrets.LABCO_API_KEY}}" ${domain}/api/v4/projects/${urlencoded}/merge_requests/${mrid} | jq -r .state`
+          apioutput=`curl -H "Authorization: Bearer ${{secrets.LABCO_API_KEY}}" ${domain}/api/v4/projects/${urlencoded}/merge_requests/${mrid}`
+          mrstate=`echo ${apioutput} | jq -r .state`
           if [ "$mrstate" != "opened" ]; then
             echo "EXITEARLY=y" >> $GITHUB_ENV
+            # help debug in case it was some kind of failure
+            echo $apioutput
           fi
       - name: Apply PR
         if: ${{ (github.event.inputs.prurl != 0) && (env.EXITEARLY != 'y') }}
         run: |
-          cd  ~/drupal/web/sites/default/files/civicrm/ext/thingtotest
+          cd ~/${{ env.EXTENSIONFOLDER }}/thingtotest
           curl -L -o thingtopatch.patch ${{ github.event.inputs.prurl }}.patch
           git am thingtopatch.patch
       - name: Apply Core PR
@@ -159,7 +192,7 @@ jobs:
       - name: Download extension dependencies
         if: ${{ (github.event.inputs.repourl != 0) && (env.EXITEARLY != 'y') }}
         run: |
-          cd ~/drupal/web/sites/default/files/civicrm/ext
+          cd ~/${{ env.EXTENSIONFOLDER }}
           # Allow "unapproved" extensions
           $GITHUB_WORKSPACE/civicrm-cv/bin/cv ev '\Civi::settings()->set("ext_repo_url", "https://civicrm.org/extdir/ver={ver}|cms={uf}|ready=");'
           $GITHUB_WORKSPACE/civicrm-cv/bin/cv ev '\Civi::settings()->set("http_timeout", 60);'
@@ -192,7 +225,7 @@ jobs:
             # If not specified it will try phpunit.xml.dist or phpunit.xml depending on what they have, and hopefully that file points to a good bootstrap file
             PHPUNITARGS="$PHPUNITARGS -c ${{ matrix.phpunit-xml }}"
           fi
-          cd ~/drupal/web/sites/default/files/civicrm/ext/thingtotest
+          cd ~/${{ env.EXTENSIONFOLDER }}/thingtotest
           # TODO: We could do something like glob and iterate through any folders that are not Mink? But these are the only ones that typically autoload anyway.
           if [ -d tests/phpunit/CRM ]; then ~/drupal/vendor/bin/phpunit $PHPUNITARGS tests/phpunit/CRM; fi
           if [ -d tests/phpunit/Civi ]; then ~/drupal/vendor/bin/phpunit $PHPUNITARGS tests/phpunit/Civi; fi
@@ -219,7 +252,7 @@ jobs:
           cd $GITHUB_WORKSPACE
           STARTTIME=`cat carrottimerfile`
           TIMEUSED=$(( `date +%s` - $STARTTIME ))
-          # TODO: SPACEUSED=`cat carrotspacefile`         
+          # TODO: SPACEUSED=`cat carrotspacefile`
           SPACEUSED=00
           echo "{\"type\":\"plain\",\"id\":${{ github.event.inputs.contactid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED,\"repo\":\"${{ github.event.inputs.repourl }}\",\"pr\":\"${{ github.event.inputs.prurl }}\",\"run_id\":\"${{ github.run_id }}\"}"
           curl --user ${{secrets.REST_USER}}:${{secrets.REST_PASS}} -X POST -H "Content-type: application/json" -d "{\"type\":\"plain\",\"id\":${{ github.event.inputs.contactid }},\"bytes\":\"$SPACEUSED\",\"seconds\":$TIMEUSED,\"repo\":\"${{ github.event.inputs.repourl }}\",\"pr\":\"${{ github.event.inputs.prurl }}\",\"run_id\":\"${{ github.run_id }}\"}" https://civicrm.io/githubaction/${{ github.event.inputs.contactid }}
@@ -244,4 +277,3 @@ jobs:
           mrid=${prurl##*/}
           echo ${domain}/api/v4/projects/${urlencoded}/merge_requests/${mrid}/notes
           curl -H "Authorization: Bearer ${{secrets.LABCO_API_KEY}}" -X POST ${domain}/api/v4/projects/${urlencoded}/merge_requests/${mrid}/notes?body=${{ env.RUNSTATUS }}:+Unit+Tests:+https:%2F%2Fgithub.com%2Fsemperit%2FCiviCARROT%2Factions%2Fruns%2F${{ github.run_id }}
-          
