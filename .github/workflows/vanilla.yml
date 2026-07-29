@@ -81,7 +81,7 @@ jobs:
           composer config --no-interaction --no-plugins allow-plugins.cweagans/composer-patches true
           COMPOSER_MEMORY_LIMIT=-1 composer install
       - name: Download Drupal
-        if: ${{ matrix.cms == 'drupal' }}
+        if: ${{ matrix.cms == '' || matrix.cms == 'drupal' }}
         run: |
           COMPOSER_MEMORY_LIMIT=-1 composer create-project drupal/recommended-project:${{ matrix.drupal }} ~/drupal --no-interaction --no-install
           cd ~/drupal
@@ -98,7 +98,7 @@ jobs:
           composer config --no-interaction --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer install --no-interaction
       - name: Download CiviCRM ${{ matrix.civicrm }}
-        if: ${{ matrix.cms == 'drupal' }}
+        if: ${{ matrix.cms == '' || matrix.cms == 'drupal' }}
         run: |
           cd ~/drupal
           composer config 'preferred-install.civicrm/*' 'source'
@@ -128,7 +128,7 @@ jobs:
           composer install --no-interaction
           COMPOSER_MEMORY_LIMIT=-1 composer require -w phpunit/phpunit:'^9'
       - name: Install Drupal
-        if: ${{ matrix.cms == 'drupal' }}
+        if: ${{ matrix.cms == '' || matrix.cms == 'drupal' }}
         run: |
           cd ~/drupal
           ./vendor/drush/drush/drush -y -l http://civi.localhost site-install standard --db-url='mysql://root:@127.0.0.1:${{ job.services.mysql.ports[3306] }}/db' --site-name=TestCivi --account-pass=admin
@@ -141,15 +141,15 @@ jobs:
       - name: Get some code to test
         if: ${{ github.event.inputs.repourl != 0 }}
         run: |
-          if [ "${{ matrix.cms }}" == "drupal" ]; then
-            echo "EXTENSIONFOLDER=drupal/web/sites/default/files/civicrm/ext" >> $GITHUB_ENV
-            mkdir -p ~/drupal/web/sites/default/files/civicrm/ext
-            # the env var isn't available until the next action step, so need to spell this out and duplicate in the "else" clause too.
-            cd ~/drupal/web/sites/default/files/civicrm/ext
-          else
+          if [ "${{ matrix.cms }}" != "standalone" ]; then
             echo "EXTENSIONFOLDER=drupal/ext" >> $GITHUB_ENV
+            # the env var isn't available until the next action step, so need to spell this out and duplicate in the "else" clause too.
             mkdir -p ~/drupal/ext
             cd ~/drupal/ext
+          else
+            echo "EXTENSIONFOLDER=drupal/web/sites/default/files/civicrm/ext" >> $GITHUB_ENV
+            mkdir -p ~/drupal/web/sites/default/files/civicrm/ext
+            cd ~/drupal/web/sites/default/files/civicrm/ext
           fi
           if [ "${{ github.event.inputs.repobranch }}" != "" ]; then
             git clone -b ${{ github.event.inputs.repobranch }} ${{ github.event.inputs.repourl }} thingtotest
