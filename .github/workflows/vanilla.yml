@@ -199,14 +199,38 @@ jobs:
           $GITHUB_WORKSPACE/civicrm-cv/bin/cv ev '\Civi::settings()->set("ext_repo_url", "https://civicrm.org/extdir/ver={ver}|cms={uf}|ready=");'
           $GITHUB_WORKSPACE/civicrm-cv/bin/cv ev '\Civi::settings()->set("http_timeout", 60);'
           DEPS=`php -r '$xml = simplexml_load_file("thingtotest/info.xml"); $deps = array(); foreach ($xml->requires as $req) { foreach ($req->ext as $ext) { $deps[] = $ext; } } echo implode(" ", $deps);'`
+          CARROTJSON=thingtotest/tests/civicarrot.json
           if [ -n "$DEPS" ]; then
             for e in $DEPS; do
-              # Might need to be tolerant of failure here since it's possible to have dependencies that
-              # aren't in universe and that could still get installed by the tests themselves. But this
-              # whole system is really only designed for publicly reachable repos at the moment. Also
-              # if you declare a dependency on a core extension, there's nothing to "download".
-              # By adding the `||` the exit code is the exit code of `echo`, which will be success.
-              $GITHUB_WORKSPACE/civicrm-cv/bin/cv api3 Extension.download install=0 key=$e || echo 'ignoring failure'
+              OVERRIDE=""
+              if [ -f "$CARROTJSON" ]; then
+                OVERRIDE=`php -r '
+                  $cfg = json_decode(file_get_contents($argv[1]), true);
+                  foreach (($cfg["dependencies"] ?? []) as $dep) {
+                    if (($dep["key"] ?? null) === $argv[2] && !empty($dep["repository"])) {
+                      echo $dep["repository"] . "\t" . ($dep["ref"] ?? "");
+                      break;
+                    }
+                  }
+                ' "$CARROTJSON" "$e"`
+              fi
+              if [ -n "$OVERRIDE" ]; then
+                REPO=`echo "$OVERRIDE" | cut -f1`
+                REF=`echo "$OVERRIDE" | cut -f2`
+                echo "civicarrot.json dependency override for $e: $REPO ${REF:+(ref: $REF)}"
+                if [ -n "$REF" ]; then
+                  git clone -b "$REF" "$REPO" "$e" || echo 'ignoring failure'
+                else
+                  git clone "$REPO" "$e" || echo 'ignoring failure'
+                fi
+              else
+                # Might need to be tolerant of failure here since it's possible to have dependencies that
+                # aren't in universe and that could still get installed by the tests themselves. But this
+                # whole system is really only designed for publicly reachable repos at the moment. Also
+                # if you declare a dependency on a core extension, there's nothing to "download".
+                # By adding the `||` the exit code is the exit code of `echo`, which will be success.
+                $GITHUB_WORKSPACE/civicrm-cv/bin/cv api3 Extension.download install=0 key=$e || echo 'ignoring failure'
+              fi
             done
           fi
       - name: Run PHPUnit
