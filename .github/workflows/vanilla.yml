@@ -204,13 +204,24 @@ jobs:
             for e in $DEPS; do
               OVERRIDE=""
               if [ -f "$CARROTJSON" ]; then
+                # Only lab.civicrm.org is trusted as a dependency override source. This
+                # is read from the tested extension's own (fully attacker-controlled,
+                # if the MR is malicious) branch, so without this allowlist an MR could
+                # point a "dependency" at any arbitrary git repo, not just published
+                # extensions vetted via the CiviCRM extension directory.
                 OVERRIDE=`php -r '
                   $cfg = json_decode(file_get_contents($argv[1]), true);
                   foreach (($cfg["dependencies"] ?? []) as $dep) {
-                    if (($dep["key"] ?? null) === $argv[2] && !empty($dep["repository"])) {
-                      echo $dep["repository"] . "\t" . ($dep["ref"] ?? "");
+                    if (($dep["key"] ?? null) !== $argv[2] || empty($dep["repository"])) {
+                      continue;
+                    }
+                    $host = parse_url($dep["repository"], PHP_URL_HOST);
+                    if ($host !== "lab.civicrm.org") {
+                      fwrite(STDERR, "civicarrot.json: ignoring dependency override for {$argv[2]} - repository host \"$host\" is not on the allowlist (lab.civicrm.org only)\n");
                       break;
                     }
+                    echo $dep["repository"] . "\t" . ($dep["ref"] ?? "");
+                    break;
                   }
                 ' "$CARROTJSON" "$e"`
               fi
