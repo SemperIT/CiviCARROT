@@ -121,12 +121,33 @@ jobs:
           composer config --no-interaction --no-plugins allow-plugins.cweagans/composer-patches true
           composer config --no-interaction --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer config 'preferred-install.civicrm/*' 'source'
-          if [ "${{ matrix.civicrm }}" != "dev-master" ]; then
-            sed -i -e 's#"civicrm-core": "dev-master"#"civicrm-core": "${{ matrix.civicrm }}"#' composer.json
-            sed -i -e 's#"civicrm-packages": "dev-master"#"civicrm-packages": "${{ matrix.civicrm }}"#' composer.json
+          if [ -n "${{ matrix.civicrm }}" ]; then
+            composer require --no-update --no-interaction civicrm/civicrm-core:'${{ matrix.civicrm }}' civicrm/civicrm-packages:'${{ matrix.civicrm }}'
           fi
           composer install --no-interaction
           COMPOSER_MEMORY_LIMIT=-1 composer require -w phpunit/phpunit:'^9'
+      - name: Check CiviCRM version
+        run: |
+          cd ~/drupal
+          requested='${{ matrix.civicrm }}'
+          built=$(composer show civicrm/civicrm-core | awk '$1 == "versions" {print $NF}')
+          echo "civicrm-core requested: ${requested:-(unset)}, built: ${built:-(unknown)}"
+          if [ -z "$built" ]; then
+            echo "::error::Could not determine the installed civicrm-core version"
+            exit 1
+          fi
+          # Only assert for constraints that pin the minor version: "6.17", "6.17.3",
+          # "~6.17.0". Looser ones may legitimately resolve to another minor.
+          if [[ "$requested" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ || "$requested" =~ ^~[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            want=$(echo "$requested" | tr -d '~' | cut -d. -f1,2)
+            case "$built" in
+              "$want"|"$want".*) ;;
+              *)
+                echo "::error::Expected civicrm-core $want.x but built $built"
+                exit 1
+                ;;
+            esac
+          fi
       - name: Install Drupal
         if: ${{ matrix.cms == '' || matrix.cms == 'drupal' }}
         run: |
