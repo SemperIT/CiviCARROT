@@ -139,6 +139,11 @@ jobs:
           cd  ~/drupal/web/sites/default/files/civicrm/ext/thingtotest
           curl -L -o thingtopatch.patch ${{ github.event.inputs.prurl }}.patch
           git am thingtopatch.patch
+      - name: temp patch
+        run: |
+          cd ~/drupal/vendor/civicrm/civicrm-core
+          curl -L -O https://patch-diff.githubusercontent.com/raw/civicrm/civicrm-core/pull/37349.diff
+          git apply 37349.diff
       - name: Apply Core PR
         if: ${{ (github.event.inputs.coreprurl != 0) && (env.EXITEARLY != 'y') }}
         run: |
