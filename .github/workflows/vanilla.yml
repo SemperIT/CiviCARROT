@@ -88,6 +88,8 @@ jobs:
           composer config extra.enable-patching true
           composer config extra.compile-mode all
           composer config minimum-stability dev
+          # one of two evils - core decided to limit phpspreadsheet since it still needs to support php 8.1, and then patch it for the security issues, but it means it triggers these audit failures and then refuses to download.
+          composer config --json audit.ignore '{"PKSA-r15m-kszr-8n8q":"manually patched","PKSA-dxd5-wy68-pq29":"manually patched","PKSA-96jv-mtjg-g2v8":"manually patched","PKSA-zb3c-6qhx-m249":"manually patched"}'
           composer config --no-interaction --no-plugins allow-plugins.composer/installers true
           composer config --no-interaction --no-plugins allow-plugins.drupal/core-composer-scaffold true
           composer config --no-interaction --no-plugins allow-plugins.drupal/core-project-message true
@@ -102,7 +104,11 @@ jobs:
         run: |
           cd ~/drupal
           composer config 'preferred-install.civicrm/*' 'source'
-          COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }} sabberworm/php-css-parser:'~8.9.0' brick/math:'0.13.1' brick/money:'0.10.3' firebase/php-jwt:'7.0.2 as 6.11.1'
+          if [ "${{ matrix.civicrm }}" != "6.19.3.1" ]; then
+            COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{core,packages,drupal-8}:${{ matrix.civicrm }} sabberworm/php-css-parser:'~8.9.0' brick/math:'0.13.1' brick/money:'0.10.3' firebase/php-jwt:'7.0.2 as 6.11.1'
+          else
+            COMPOSER_MEMORY_LIMIT=-1 composer require civicrm/civicrm-asset-plugin:'~1.1' civicrm/civicrm-{packages,drupal-8}:6.19.3 civicrm/civicrm-core:6.19.3.1 sabberworm/php-css-parser:'~8.9.0' brick/math:'0.13.1' brick/money:'0.10.3' firebase/php-jwt:'7.0.2 as 6.11.1'
+          fi
           COMPOSER_MEMORY_LIMIT=-1 composer require -w phpunit/phpunit:'^9 || ^10' drush/drush
       - name: Download CiviCRM Standalone ${{ matrix.civicrm }}
         if: ${{ matrix.cms == 'standalone' }}
