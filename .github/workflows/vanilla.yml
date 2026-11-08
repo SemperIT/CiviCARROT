@@ -120,6 +120,8 @@ jobs:
           composer config extra.enable-patching true
           composer config extra.compile-mode all
           composer config minimum-stability dev
+          # one of two evils - core decided to limit phpspreadsheet since it still needs to support php 8.1, and then patch it for the security issues, but it means it triggers these audit failures and then refuses to download.
+          composer config --json audit.ignore '{"PKSA-r15m-kszr-8n8q":"manually patched","PKSA-dxd5-wy68-pq29":"manually patched","PKSA-96jv-mtjg-g2v8":"manually patched","PKSA-zb3c-6qhx-m249":"manually patched"}'
           composer config --no-interaction --no-plugins allow-plugins.composer/installers true
           composer config --no-interaction --no-plugins allow-plugins.civicrm/composer-compile-plugin true
           composer config --no-interaction --no-plugins allow-plugins.civicrm/composer-downloads-plugin true
