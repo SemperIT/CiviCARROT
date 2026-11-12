@@ -104,7 +104,7 @@ jobs:
         run: |
           cd ~/drupal
           COMPOSER_MEMORY_LIMIT=-1 composer require semperit/minkcivicrmhelpers
-      - uses: nanasess/setup-chromedriver@master
+      - uses: nanasess/setup-chromedriver@v3
       - name: Run chromedriver
         run: chromedriver --port=9515 &
       - name: Run php built-in server
